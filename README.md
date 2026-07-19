@@ -63,6 +63,7 @@ The implementation follows the official [Responses API](https://developers.opena
 app/          FastAPI service and CCS, BKT, LLM, session, and persistence modules
 data/classes/ Authored live-class fixtures and confusion ground truth
 data/validation_classes/ Additional authored benchmark-only scenarios
+data/outcome_pairs/ Matched authored control/reframed outcome scenarios
 data/real/    Licensed TalkMoves classroom-language validation data
 public/       Dependency-free dashboard assets
 scripts/      Reproducible evaluation utilities
@@ -122,6 +123,10 @@ See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture t
 ### Confidence calibration
 
 Run `py scripts/calibrate_ccs_confidence.py` to bucket warning/confirmed events by displayed confidence and compare each bucket with empirical authored-window precision. The formula now rewards distinct signal types, student breadth, and confirmed state rather than repeated raw evidence counts. The current nine-fixture check has a **0.242 weighted absolute gap** and non-monotonic buckets, so confidence is **still uncalibrated**. It is an evidence-quality heuristic, not a probability that an alert is correct. See [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
+
+## Outcome validation
+
+Run `py scripts/backtest_nudge_outcome.py` to replay two matched control/reframed pairs for fractions and forces. Both arms trigger at the same point and measure the immediately following poll; events and session metadata carry `nudge_applied`. In these authored pairs, mean next-poll correctness is **0.250 control** versus **1.000 reframed**, an authored **+0.750 delta**. This verifies outcome-linking and A/B scaffolding only. The improved responses were written into the scenarios, so this is **not a causal experiment** and does not establish effects on real teacher behavior or student learning. See [validation/NUDGE_OUTCOME_BACKTEST.md](./validation/NUDGE_OUTCOME_BACKTEST.md).
 
 ## Simulated versus real
 

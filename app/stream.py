@@ -17,6 +17,7 @@ class ScriptedClass:
     concept: str
     students: list[str]
     events: list[dict]
+    nudge_applied: bool = False
 
     @classmethod
     def load(cls, name: str, data_dir: Path = DATA_DIR) -> "ScriptedClass":
@@ -26,7 +27,7 @@ class ScriptedClass:
             raise FileNotFoundError(f"Unknown scripted class: {name}")
         payload = json.loads(path.read_text(encoding="utf-8"))
         events = sorted(payload["events"], key=lambda event: event["at"])
-        return cls(payload["id"], payload["title"], payload["concept"], payload["students"], events)
+        return cls(payload["id"], payload["title"], payload["concept"], payload["students"], events, bool(payload.get("nudge_applied", False)))
 
     @classmethod
     def catalog(cls) -> list[dict]:
@@ -43,6 +44,6 @@ async def replay_events(lesson: ScriptedClass, speed: float = 1.0) -> AsyncItera
         wait = max(0.0, float(source["at"]) - previous_at) / max(speed, 0.01)
         if wait:
             await asyncio.sleep(wait)
-        event = {**source, "sequence": sequence, "lesson_id": lesson.id, "concept": lesson.concept}
+        event = {**source, "sequence": sequence, "lesson_id": lesson.id, "concept": lesson.concept, "nudge_applied": lesson.nudge_applied}
         yield event
         previous_at = float(source["at"])

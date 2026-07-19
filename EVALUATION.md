@@ -14,10 +14,11 @@ The Python test suite covers:
 - complete runtime production of transcript, CCS, mastery, and nudge messages;
 - live student submissions entering the same runtime queue and `process_event` path as scripted events, with SSE/API/UI tagging;
 - concurrent sessions maintaining independent queues, CCS scores, mastery, stream URLs, and lifecycle status;
+- TalkMoves sentiment proxy agreement, CCS confidence buckets, and matched nudge-outcome arm linkage;
 - FastAPI health/catalog endpoints, SSE delivery, static dashboard delivery;
 - presence of the live transcript, CCS gauge, nudge panel, mastery table, and EventSource client.
 
-Final implementation checkpoint after the CCS upgrade: **39 passed, 0 failed**. Ten deprecation warnings originate inside FastAPI under Python 3.14; no ClassPulse warning or failure was emitted. `node --check public/app.js` also passed.
+Final implementation checkpoint after Tasks 10–13: **46 passed, 0 failed**. Ten deprecation warnings originate inside FastAPI under Python 3.14; no ClassPulse warning or failure was emitted. `node --check public/app.js` also passed.
 
 ## Real-data validation
 
@@ -59,6 +60,10 @@ The pre-poll calculation uses the score from the prior event, so the poll result
 ## CCS confidence calibration
 
 Twenty warning/confirmed event points were grouped by displayed confidence. Replacing raw evidence counts with distinct signal types, student breadth, and confirmation state prevents repeated events from mechanically inflating confidence, but the resulting bucket table remains non-monotonic with a **0.242 weighted absolute gap**. Confidence is therefore reported as an uncalibrated evidence-quality heuristic, not an alert-correctness probability. Details are in [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
+
+## Authored nudge-outcome linkage
+
+Two matched pairs replay through the production runtime with explicit `nudge_applied` markers. Fractions and forces both show authored next-poll correctness changing from **0.250 control** to **1.000 reframed** (**+0.750** each and in aggregate). This validates trigger-to-next-poll linkage and matched-arm analysis. Because outcomes are authored by construction and there are no real participants or randomization, it is not evidence of a causal learning effect. Details are in [validation/NUDGE_OUTCOME_BACKTEST.md](./validation/NUDGE_OUTCOME_BACKTEST.md).
 
 ## Real-server smoke test
 

@@ -101,7 +101,7 @@ class ClassRuntime:
     async def run(self, speed=1.0) -> AsyncIterator[dict]:
         self.started = True
         self.status = "running"
-        yield {"kind": "session", "data": {"lesson": self.lesson.title, "concept": self.lesson.concept, "students": self.lesson.students, "llm_mode": self.provider.mode, "session_id": self.session_id}}
+        yield {"kind": "session", "data": {"lesson": self.lesson.title, "concept": self.lesson.concept, "students": self.lesson.students, "llm_mode": self.provider.mode, "session_id": self.session_id, "nudge_applied": self.lesson.nudge_applied}}
         yield {"kind": "mastery", "data": {"students": self.bkt.snapshot(self.lesson.concept, self.lesson.students), "initial": True, "session_id": self.session_id}}
         producer = asyncio.create_task(self._produce_replay(speed))
         while True:
