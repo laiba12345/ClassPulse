@@ -38,7 +38,7 @@ py -m pip install -r requirements.txt
 
 ## GPT‑5.6 configuration
 
-Set `OPENAI_API_KEY` before launching. With a key, `CLASSPULSE_LLM_MODE=auto` selects the real Responses API adapter using model `gpt-5.6` and strict JSON schemas for both sentiment and nudge calls.
+Put `OPENAI_API_KEY` in the repository's `.env` file before launching. The file is loaded automatically and ignored by Git. With a key, `CLASSPULSE_LLM_MODE=auto` selects the real Responses API adapter using model `gpt-5.6` and strict JSON schemas for both sentiment and nudge calls.
 
 ```powershell
 $env:OPENAI_API_KEY = "your-key"

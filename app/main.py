@@ -13,6 +13,9 @@ from app.stream import ScriptedClass
 from app.real_data import TalkMovesCorpus
 from app.memory import build_memory
 from app.sessions import SessionRegistry
+from app.config import load_env_file
+
+load_env_file()
 from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).parents[1]
