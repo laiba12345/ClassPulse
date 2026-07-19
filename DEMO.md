@@ -18,7 +18,7 @@ At `CCS ≥ 0.60`, one alert recommends equal-sized fraction bars. Expand “Why
 
 ## Show student mastery
 
-The poll updates each student explicitly, while CCS supplies weaker soft evidence. The BKT table changes without refresh and exposes evidence counts and confidence.
+The poll updates each student explicitly, while CCS supplies weaker soft evidence. The BKT table changes without refresh and exposes evidence counts and confidence. Replay the class or restart the server: mastery begins from the SQLite-persisted ending state and shows a “since last session” trend.
 
 ## Switch scenarios
 

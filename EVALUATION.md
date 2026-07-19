@@ -8,6 +8,7 @@ The Python test suite covers:
 - clearly confused and clearly calm CCS windows;
 - CCS range guarantees;
 - ten correct BKT updates, repeated incorrect updates, soft CCS evidence, and combined evidence;
+- SQLite round-trip persistence, timestamped updates, unchanged first-run behavior, restart loading, and prior-session deltas;
 - GPT‑5.6 model selection and strict sentiment/nudge JSON schemas;
 - exactly one concept-specific nudge per spike and no calm nudge;
 - complete runtime production of transcript, CCS, mastery, and nudge messages;

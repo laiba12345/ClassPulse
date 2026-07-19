@@ -9,3 +9,4 @@ def test_dashboard_has_all_live_product_surfaces():
     assert "EventSource" in js
     assert "/api/stream/" in js
     assert "/api/evidence/real-data" in js
+    assert "session_delta" in js

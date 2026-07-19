@@ -32,6 +32,7 @@ py -m pip install -r requirements.txt
 4. Explicit poll correctness updates BKT strongly. CCS contributes lower-weight soft evidence.
 5. When CCS first crosses `0.60`, the nudge engine calls GPT‑5.6 with strict Structured Outputs. It does not fire again until the score falls below the reset threshold.
 6. The single dashboard updates through Server-Sent Events without refresh: transcript, CCS gauge/components, nudge, and mastery table.
+7. BKT state is persisted to SQLite after every update. A restarted session begins from the previous ending mastery and shows the change since that prior session.
 
 ## GPT‑5.6 configuration
 
@@ -70,6 +71,7 @@ poll correctness ─────────────────────
 - `app/stream.py`: validated fixture catalog and ordered asynchronous replay.
 - `app/ccs.py`: deterministic signal features and bounded sigmoid fusion.
 - `app/bkt.py`: deterministic BKT with explicit and soft evidence.
+- `app/memory.py`: SQLite mastery repository with timestamped upserts and restart-safe loading.
 - `app/llm.py`: strict schemas, OpenAI Responses adapter, and labeled demo provider.
 - `app/nudges.py`: threshold crossing and once-per-spike suppression.
 - `app/runtime.py`: coherent event-to-CCS-to-BKT-to-nudge loop.
@@ -105,6 +107,7 @@ See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture t
 | Sentiment and nudge generation | Real GPT‑5.6 when configured; visibly labeled deterministic fallback otherwise |
 | Keyword, latency, poll, CCS fusion | Real deterministic computation |
 | BKT mastery | Real deterministic probabilistic computation |
+| Mastery across restarts | SQLite persistence in `data/classpulse.db` |
 | Browser updates | Real SSE stream |
 | Raw audio, database, multiple classes/teachers, memory agent | Out of scope |
 
@@ -130,6 +133,7 @@ Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset p
 - Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against three authored windows, but it is not trained or calibrated on deployment data and showed only 0.500 recall.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.
+- SQLite persistence is local to this demo instance and has no authentication, roster reconciliation, or school data-retention policy.
 - Automated tests mock the Responses transport; a live GPT‑5.6 call requires the user’s valid API key and account access.
 - TalkMoves is restricted to attribution, noncommercial use, and share-alike redistribution under its source license.
 

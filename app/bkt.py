@@ -12,9 +12,15 @@ class MasteryState:
 
 
 class BKTTracker:
-    def __init__(self, initial_mastery=.35, learn=.12, slip=.1, guess=.2, ccs_lambda=.18):
+    def __init__(self, initial_mastery=.35, learn=.12, slip=.1, guess=.2, ccs_lambda=.18, memory=None):
         self.initial_mastery, self.learn, self.slip, self.guess, self.ccs_lambda = initial_mastery, learn, slip, guess, ccs_lambda
-        self.states: dict[tuple[str, str], MasteryState] = {}
+        self.memory = memory
+        stored = memory.load_states() if memory else {}
+        self.states: dict[tuple[str, str], MasteryState] = {
+            key: MasteryState(value["mastery"], value["observations"], value["correct"], value["soft_updates"])
+            for key, value in stored.items()
+        }
+        self.prior_session_mastery = {key: state.mastery for key, state in self.states.items()}
 
     def _state(self, student_id: str, concept: str) -> MasteryState:
         return self.states.setdefault((student_id, concept), MasteryState(self.initial_mastery))
@@ -38,17 +44,22 @@ class BKTTracker:
             mastery -= self.ccs_lambda * max(0.0, min(1.0, ccs)) * mastery
             state.soft_updates += 1
         state.mastery = round(max(.01, min(.99, mastery)), 4)
+        if self.memory:
+            self.memory.save_state(student_id, concept, state)
         return state.mastery
 
     def snapshot(self, concept: str, students: list[str]) -> list[dict]:
         output = []
         for student in students:
             state = self._state(student, concept)
+            prior = self.prior_session_mastery.get((student, concept))
             output.append({
                 "student_id": student.lower().replace(" ", "-"), "name": student, "concept": concept,
                 "mastery": state.mastery, "observations": state.observations,
                 "confidence": round(min(.95, .4 + .1 * state.observations + .025 * state.soft_updates), 2),
                 "evidence": f"{state.observations} graded and {state.soft_updates} CCS soft-evidence updates.",
                 "limitations": "BKT is an estimate based on the current scripted session, not a fixed learner label.",
+                "has_prior_session": prior is not None,
+                "session_delta": round(state.mastery - prior, 4) if prior is not None else None,
             })
         return output

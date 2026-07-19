@@ -11,6 +11,7 @@ from app.llm import build_provider
 from app.runtime import ClassRuntime
 from app.stream import ScriptedClass
 from app.real_data import TalkMovesCorpus
+from app.memory import build_memory
 
 ROOT = Path(__file__).parents[1]
 PUBLIC = ROOT / "public"
@@ -40,7 +41,7 @@ async def stream(lesson_id: str, speed: float = Query(3.0, gt=0, le=10_000)):
         lesson = ScriptedClass.load(lesson_id.replace("-", "_"))
     except FileNotFoundError as error:
         raise HTTPException(404, str(error)) from error
-    runtime = ClassRuntime(lesson, build_provider())
+    runtime = ClassRuntime(lesson, build_provider(), memory=build_memory())
 
     async def events():
         async for message in runtime.run(speed):

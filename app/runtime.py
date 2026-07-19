@@ -14,9 +14,9 @@ logger = logging.getLogger("classpulse.runtime")
 
 
 class ClassRuntime:
-    def __init__(self, lesson: ScriptedClass, provider: StructuredProvider):
+    def __init__(self, lesson: ScriptedClass, provider: StructuredProvider, memory=None):
         self.lesson, self.provider = lesson, provider
-        self.ccs, self.bkt, self.nudges = CCSEngine(), BKTTracker(), NudgeEngine(provider)
+        self.ccs, self.bkt, self.nudges = CCSEngine(), BKTTracker(memory=memory), NudgeEngine(provider)
         self.sentiments = deque(maxlen=5); self.latencies = deque(maxlen=5); self.quotes = deque(maxlen=5)
         self.keyword_flags = 0; self.poll_correct = []
 
@@ -25,6 +25,7 @@ class ClassRuntime:
 
     async def run(self, speed=1.0) -> AsyncIterator[dict]:
         yield {"kind": "session", "data": {"lesson": self.lesson.title, "concept": self.lesson.concept, "students": self.lesson.students, "llm_mode": self.provider.mode}}
+        yield {"kind": "mastery", "data": {"students": self.bkt.snapshot(self.lesson.concept, self.lesson.students), "initial": True}}
         for event in [item async for item in replay_events(self.lesson, speed)]:
             yield {"kind": "event", "data": event}
             if event["type"] in ("teacher", "chat"):

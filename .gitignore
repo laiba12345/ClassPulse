@@ -4,6 +4,9 @@ __pycache__/
 htmlcov/
 .venv/
 .env
+data/*.db
+data/*.db-shm
+data/*.db-wal
 .tmp_talkmoves/
 node_modules/
 coverage/
