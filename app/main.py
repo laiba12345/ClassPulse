@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from app.llm import build_provider
 from app.runtime import ClassRuntime
 from app.stream import ScriptedClass
+from app.real_data import TalkMovesCorpus
 
 ROOT = Path(__file__).parents[1]
 PUBLIC = ROOT / "public"
@@ -26,6 +27,11 @@ def health():
 @app.get("/api/classes")
 def classes():
     return ScriptedClass.catalog()
+
+
+@app.get("/api/evidence/real-data")
+def real_data_evidence():
+    return TalkMovesCorpus.load().report()
 
 
 @app.get("/api/stream/{lesson_id}")

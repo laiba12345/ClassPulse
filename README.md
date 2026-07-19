@@ -96,6 +96,22 @@ The suite verifies event order/timestamps, all three fixtures, calm/confused CCS
 | Browser updates | Real SSE stream |
 | Raw audio, database, multiple classes/teachers, memory agent | Out of scope |
 
+## Real classroom data validation
+
+The repository includes the official TalkMoves public test splits under `data/real/talkmoves/`, licensed **CC BY-NC-SA 4.0** and preserved without content changes. TalkMoves contains human-transcribed, anonymized K–12 mathematics classroom language with teacher and student discourse-move annotations.
+
+ClassPulse validates:
+
+- **30,401** annotated utterance pairs;
+- **23,250** teacher pairs across seven teacher talk-move labels;
+- **7,151** student pairs across five student talk-move labels;
+- required TSV schema, non-empty response coverage, speaker roles, and full label distributions;
+- API and dashboard presentation of provenance, examples, metrics, and limitations.
+
+This strengthens real-language and ingestion validation. It does not establish CCS accuracy because TalkMoves supplies discourse labels rather than confusion labels, latency, polls, or mastery outcomes. The synthetic scenarios retain known confusion ground truth for end-to-end validation.
+
+Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset paper: [Suresh et al.](https://arxiv.org/abs/2204.09652). See [`data/real/talkmoves/DATASET.md`](./data/real/talkmoves/DATASET.md) for attribution and usage boundaries.
+
 ## Limitations
 
 - Fixtures replace real audio and platform integrations.
@@ -103,5 +119,6 @@ The suite verifies event order/timestamps, all three fixtures, calm/confused CCS
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.
 - Automated tests mock the Responses transport; a live GPT‑5.6 call requires the user’s valid API key and account access.
+- TalkMoves is restricted to attribution, noncommercial use, and share-alike redistribution under its source license.
 
 Codex was used to implement the FastAPI/SSE service, deterministic math, typed OpenAI boundary, test suite, fixtures, dashboard, launch scripts, and documentation.

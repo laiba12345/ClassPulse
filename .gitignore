@@ -4,6 +4,7 @@ __pycache__/
 htmlcov/
 .venv/
 .env
+.tmp_talkmoves/
 node_modules/
 coverage/
 .DS_Store

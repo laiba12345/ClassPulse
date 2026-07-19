@@ -14,7 +14,24 @@ The Python test suite covers:
 - FastAPI health/catalog endpoints, SSE delivery, static dashboard delivery;
 - presence of the live transcript, CCS gauge, nudge panel, mastery table, and EventSource client.
 
-Latest implementation checkpoint: **19 passed, 0 failed** in 0.98 seconds. Four deprecation warnings originate inside FastAPI under Python 3.14; no ClassPulse warning or failure was emitted.
+Latest implementation checkpoint after real-data integration: **22 passed, 0 failed** in 0.88 seconds. Five deprecation warnings originate inside FastAPI under Python 3.14; no ClassPulse warning or failure was emitted.
+
+## Real-data validation
+
+Official TalkMoves public test splits were loaded from the SumnerLab release:
+
+| Measure | Result |
+|---|---:|
+| Total annotated utterance pairs | 30,401 |
+| Teacher pairs | 23,250 |
+| Teacher non-empty responses | 23,208 |
+| Student pairs | 7,151 |
+| Student non-empty responses | 6,994 |
+| Teacher annotation categories | 7 |
+| Student annotation categories | 5 |
+| Schema errors | 0 |
+
+This validates operation on real classroom language and authentic discourse annotations. TalkMoves has no confusion, latency, poll, or mastery labels, so it is not reported as a CCS accuracy benchmark.
 
 ## Real-server smoke test
 

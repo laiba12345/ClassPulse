@@ -20,3 +20,10 @@ def test_dashboard_is_served():
     response = client.get("/")
     assert response.status_code == 200
     assert "ClassPulse" in response.text
+
+def test_real_dataset_evidence_endpoint():
+    response = client.get("/api/evidence/real-data")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["dataset"] == "TalkMoves"
+    assert payload["total_rows"] > 2000
