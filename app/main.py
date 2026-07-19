@@ -44,6 +44,11 @@ class NudgeDecision(BaseModel):
     decision: str
 
 
+class LivePollInput(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    responses: dict[str, bool]
+
+
 def _runtime_for_lesson(lesson_id: str, *, for_stream: bool = False) -> ClassRuntime:
     key = lesson_id.replace("_", "-")
     record = None
@@ -158,6 +163,18 @@ def decide_session_nudge(session_id: str, nudge_id: str, payload: NudgeDecision)
 @app.get("/api/sessions/{session_id}/outcomes")
 def session_outcomes(session_id: str):
     return _session_record(session_id).runtime.outcomes.snapshot()
+
+
+@app.post("/api/sessions/{session_id}/polls", status_code=status.HTTP_202_ACCEPTED)
+def session_live_poll(session_id: str, payload: LivePollInput):
+    runtime = _session_record(session_id).runtime
+    if runtime.completed:
+        raise HTTPException(409, "Session is complete")
+    try:
+        event = runtime.submit_live_poll(payload.question, payload.responses)
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from error
+    return {"accepted": True, "event": event}
 
 
 @app.post("/api/sessions/{session_id}/stop")

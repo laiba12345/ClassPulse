@@ -49,3 +49,12 @@ def test_live_session_mode_stays_open_until_stopped():
     assert runtime.live_mode is True
     response = client.post(f"/api/sessions/{session['session_id']}/stop")
     assert response.status_code == 200
+
+
+def test_live_poll_is_accepted_for_outcome_measurement():
+    session = client.post("/api/sessions", json={"fixture_id": "forces-live", "mode": "live"}).json()
+    response = client.post(f"/api/sessions/{session['session_id']}/polls", json={
+        "question": "Which object accelerates?", "responses": {"Learner 1": True, "Learner 2": False},
+    })
+    assert response.status_code == 202
+    assert response.json()["event"]["source"] == "live_poll"

@@ -77,6 +77,21 @@ class ClassRuntime:
         self.event_queue.put_nowait(event)
         return event
 
+    def submit_live_poll(self, question: str, responses: dict[str, bool]) -> dict:
+        if not question.strip() or not responses:
+            raise ValueError("question and responses are required")
+        event = {
+            "id": f"poll-{len(self.processed_sources) + self.event_queue.qsize() + 1}",
+            "at": self.current_at + .001, "type": "poll", "question": question.strip(),
+            "responses": responses, "source": "live_poll", "live": True,
+            "session_id": self.session_id, "lesson_id": self.lesson.id, "concept": self.lesson.concept,
+        }
+        for student in responses:
+            if student not in self.lesson.students:
+                self.lesson.students.append(student)
+        self.event_queue.put_nowait(event)
+        return event
+
     def decide_nudge(self, nudge_id: str, decision: str) -> dict:
         return self.outcomes.decide(nudge_id, decision, self.current_at).as_dict()
 
