@@ -1,0 +1,14 @@
+{
+  "id": "ratios-recovery", "title": "Equivalent Ratios", "concept": "ratios",
+  "students": ["Kim", "Omar", "Elle", "Vic"],
+  "ground_truth": {"confusion_window": {"start": 4, "end": 12}, "basis": "Brief misconception followed by explicit recovery"},
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Mr. Diaz", "text": "Is 2 to 3 equivalent to 6 to 8?"},
+    {"at": 4, "type": "chat", "speaker": "Kim", "text": "Maybe yes because both numbers got bigger.", "latency_seconds": 16},
+    {"at": 8, "type": "chat", "speaker": "Omar", "text": "I am confused about whether we add or multiply.", "latency_seconds": 23},
+    {"at": 12, "type": "poll", "question": "2:3 equals 6:9", "responses": {"Kim": false, "Omar": false, "Elle": true, "Vic": true}},
+    {"at": 24, "type": "teacher", "speaker": "Mr. Diaz", "text": "Multiply both terms by the same factor; two times three is six and three times three is nine."},
+    {"at": 30, "type": "chat", "speaker": "Kim", "text": "Got it, both terms need the same multiplier.", "latency_seconds": 6},
+    {"at": 34, "type": "poll", "question": "4:6 equals 8:12", "responses": {"Kim": true, "Omar": true, "Elle": true, "Vic": true}}
+  ]
+}

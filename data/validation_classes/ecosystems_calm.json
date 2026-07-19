@@ -1,0 +1,12 @@
+{
+  "id": "ecosystems-calm", "title": "Food Chains Review", "concept": "ecosystems",
+  "students": ["Ari", "Lina", "Max", "Sofia"],
+  "ground_truth": {"confusion_window": null, "basis": "Fully calm true-negative lesson"},
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Dr. Reed", "text": "What role does grass play in this food chain?"},
+    {"at": 3, "type": "chat", "speaker": "Ari", "text": "Grass is the producer because it makes food from sunlight.", "latency_seconds": 6},
+    {"at": 6, "type": "chat", "speaker": "Lina", "text": "That makes sense; the rabbit eats the grass.", "latency_seconds": 7},
+    {"at": 9, "type": "poll", "question": "Grass is a producer", "responses": {"Ari": true, "Lina": true, "Max": true, "Sofia": true}},
+    {"at": 13, "type": "teacher", "speaker": "Dr. Reed", "text": "Exactly, energy enters through the producer."}
+  ]
+}

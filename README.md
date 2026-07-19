@@ -26,7 +26,7 @@ py -m pip install -r requirements.txt
 
 ## What happens live
 
-1. One of three JSON class fixtures replays teacher speech, student chat, and polls using original relative timestamps.
+1. One of three curated demo fixtures replays teacher speech, student chat, and polls using original relative timestamps.
 2. Every transcript line passes through the typed sentiment-provider boundary.
 3. CCS combines structured learning-state classification, keyword flags, response latency, unique-student breadth, and poll-miss rate with deterministic weighted sigmoids. Evidence decays with age instead of accumulating forever.
 4. Explicit poll correctness updates BKT strongly. CCS contributes lower-weight soft evidence.
@@ -62,6 +62,7 @@ The implementation follows the official [Responses API](https://developers.opena
 ```text
 app/          FastAPI service and CCS, BKT, LLM, session, and persistence modules
 data/classes/ Authored live-class fixtures and confusion ground truth
+data/validation_classes/ Additional authored benchmark-only scenarios
 data/real/    Licensed TalkMoves classroom-language validation data
 public/       Dependency-free dashboard assets
 scripts/      Reproducible evaluation utilities
@@ -95,7 +96,8 @@ poll correctness ─────────────────────
 - `app/sessions.py`: concurrent session registry and per-class runtime isolation.
 - `app/main.py`: FastAPI, SSE endpoint, health/catalog APIs, and static dashboard.
 - `public/`: responsive single-screen live product UI.
-- `data/classes/`: three scripted classes with deliberate confusion moments.
+- `data/classes/`: three curated live-demo classes.
+- `data/validation_classes/`: six benchmark-only classes spanning slow-build, poll-only, latency-only, recovery, false-alarm, and calm patterns.
 
 ## Testing
 
@@ -103,7 +105,7 @@ poll correctness ─────────────────────
 py -m pytest
 ```
 
-The suite verifies event order/timestamps, all three fixtures, calm/confused CCS, sigmoid bounds, BKT correctness and CCS soft-evidence weighting, both strict OpenAI schemas, one nudge per spike, calm suppression, full runtime integration, live input, persistence, concurrent-session isolation, SSE delivery, APIs, and required dashboard surfaces.
+The suite verifies event order/timestamps, all nine fixtures, calm/confused CCS, sigmoid bounds, BKT correctness and CCS soft-evidence weighting, both strict OpenAI schemas, one nudge per spike, calm suppression, full runtime integration, live input, persistence, concurrent-session isolation, SSE delivery, APIs, and required dashboard surfaces.
 
 ## CCS validation
 
@@ -113,7 +115,7 @@ Run the reproducible authored-fixture backtest with:
 py scripts/backtest_ccs.py
 ```
 
-Confirmed-alert results remain **0.857 precision** and **0.500 recall**. The new poll-independent early-warning path reaches **0.818 precision**, **0.750 recall**, and predicts **3 of 4** poll outcomes from the previous event without result leakage. These are improvements on three authored fixtures, not proof of generalization; thresholds require validation on educator-labeled held-out lessons.
+Across nine authored fixtures, confirmed alerts reach **0.875 precision** and **0.269 recall**. The poll-independent early-warning path reaches **0.750 precision**, **0.577 recall**, and predicts **6 of 11** poll outcomes from the previous event without result leakage. Expanding beyond the original three scenarios exposes materially weaker recall, especially for poll-only and latency-only confusion. These are authored-fixture results, not proof of generalization; thresholds require validation on educator-labeled held-out lessons.
 
 See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture timelines and machine-readable detail. This is fixture behavior validation, not accuracy against real classroom confusion labels.
 
@@ -151,7 +153,7 @@ Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset p
 
 - Fixtures replace real audio and platform integrations.
 - Live typed messages have no trustworthy response-latency value, so their latency contribution is zero; language and subsequent poll signals still apply normally.
-- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against three authored windows, but it is not trained or calibrated on deployment data and showed only 0.500 recall.
+- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against nine diverse authored fixtures, but it is not trained on deployment data; expanded-set confirmed recall is only 0.269.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.
 - SQLite persistence is local to this demo instance and has no authentication, roster reconciliation, or school data-retention policy.

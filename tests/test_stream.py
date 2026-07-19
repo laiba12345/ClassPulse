@@ -1,5 +1,5 @@
 import asyncio
-from app.stream import ScriptedClass, replay_events
+from app.stream import ScriptedClass, VALIDATION_DATA_DIR, replay_events
 
 def test_fixture_replays_in_order_with_original_timestamps():
     lesson = ScriptedClass.load("fractions_live")
@@ -16,3 +16,12 @@ def test_three_scripted_classes_have_confusion_moments():
         lesson = ScriptedClass.load(name)
         assert len(lesson.events) >= 4
         assert any(event["type"] == "poll" and not all(event["responses"].values()) for event in lesson.events)
+
+def test_expanded_catalog_has_nine_valid_diverse_fixtures():
+    paths = sorted(VALIDATION_DATA_DIR.glob("*.json"))
+    assert len(paths) == 6
+    for path in paths:
+        lesson = ScriptedClass.load(path.stem, VALIDATION_DATA_DIR)
+        assert len(lesson.events) >= 4
+        assert [event["at"] for event in lesson.events] == sorted(event["at"] for event in lesson.events)
+        assert all(event["speaker"] in lesson.students for event in lesson.events if event["type"] == "chat")

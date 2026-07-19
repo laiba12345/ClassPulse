@@ -4,7 +4,7 @@
 
 The Python test suite covers:
 
-- three fixture files, ordered timestamps, and poll confusion moments;
+- nine fixture files, ordered timestamps, diverse confusion patterns, false-alarm language, and a calm true-negative lesson;
 - clearly confused and clearly calm CCS windows;
 - CCS range guarantees;
 - ten correct BKT updates, repeated incorrect updates, soft CCS evidence, and combined evidence;
@@ -38,19 +38,19 @@ This validates operation on real classroom language and authentic discourse anno
 
 ## Authored-fixture CCS backtest
 
-The production CCS path was replayed against explicit confusion windows in all three scripted fixtures:
+The production CCS path was replayed against confusion annotations in all nine scripted fixtures:
 
-- Aggregate precision: **0.857**
-- Aggregate recall: **0.500**
-- Confusion matrix: TP 6, FP 1, TN 4, FN 6
-- Pre-poll majority-miss prediction: **0/4**
+- Aggregate precision: **0.875**
+- Aggregate recall: **0.269**
+- Confusion matrix: TP 7, FP 1, TN 25, FN 19
+- Pre-poll majority-miss prediction: **4/11**
 
 The separate poll-independent early-warning path produced:
 
-- Early-warning precision: **0.818**
-- Early-warning recall: **0.750**
-- Early-warning confusion matrix: TP 9, FP 2, TN 3, FN 3
-- Pre-poll majority-miss prediction: **3/4**
+- Early-warning precision: **0.750**
+- Early-warning recall: **0.577**
+- Early-warning confusion matrix: TP 15, FP 5, TN 21, FN 11
+- Pre-poll majority-miss prediction: **6/11**
 
 The pre-poll calculation uses the score from the prior event, so the poll result cannot leak into its own prediction. The early score excludes poll outcomes, while confirmed CCS retains them. Evidence is time-decayed and student breadth is normalized against the active roster. Because this remains a tiny authored set used during development, the result may be overfit and must be replicated on held-out educator labels. Full timelines are in [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md).
 

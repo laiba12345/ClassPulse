@@ -263,6 +263,158 @@ independent replays (or live sessions from Task 8) can run side by side.
 
 ---
 
+## Task 10 — Expand the CCS/BKT backtest fixture set
+
+**Goal:** Strengthen the Task 6 backtest, whose precision/recall numbers
+currently rest on only three authored fixtures.
+
+**Context:** Both `README.md` and `validation/CCS_BACKTEST.md` already flag
+this as the project's main open risk: "three authored fixtures... too
+small for calibration, fairness, or deployment claims." Adding fixture
+diversity doesn't prove real-world generalization, but it does test
+whether the CCS thresholds hold up across more varied authored confusion
+patterns than the current three.
+
+**Constraints:**
+- Add 5-10 new fixtures under `data/classes/` (or a validation-only
+  fixture directory `scripts/backtest_ccs.py` can also load) covering
+  scenarios not yet represented: slow-building confusion spread across
+  many lines instead of one spike; false-alarm keyword use ("I'm not
+  confused, right?"); confusion signaled only through poll misses with no
+  confused-language chat; a fully calm lesson with no confusion window at
+  all (a true-negative fixture)
+- No changes to CCS/BKT weights unless the expanded backtest reveals a
+  clear bug — same rule as Task 6: report what's true, don't retune to
+  make the numbers look better
+- Extend `scripts/backtest_ccs.py`'s existing precision/recall machinery
+  to run across the full fixture set and report per-fixture and aggregate
+  numbers; don't fork a second backtest script
+
+**Definition of done:**
+- `validation/CCS_BACKTEST.md` regenerated against the full fixture set
+  (old 3-fixture numbers superseded, not silently dropped)
+- README's CCS validation section and fixture-count caveat updated to
+  match the new fixture count
+- New fixtures pass the same fixture-catalog validation the existing
+  three already have (per Task 1's stream tests); existing tests unchanged
+
+---
+
+## Task 11 — Cross-check the sentiment classifier against TalkMoves labels
+
+**Goal:** Move the TalkMoves dataset from "proves the classifier runs on
+realistic classroom language" to "the classifier's confused/neutral/
+positive output is consistent with human-annotated discourse-move labels
+on real transcripts."
+
+**Context:** `app/real_data.py` already loads and validates the TalkMoves
+TSVs (30,401 pairs). The README is explicit that this currently validates
+language realism and ingestion, not classifier accuracy, because TalkMoves
+carries discourse-move labels (e.g., student reasoning, making a claim),
+not confusion labels. This task builds the closest available proxy check
+without claiming more than the data supports.
+
+**Constraints:**
+- Pick a defensible mapping from a subset of TalkMoves' student talk-move
+  labels to an expected sentiment direction (e.g., a label indicating
+  uncertainty/clarification-seeking maps loosely to "confused"; a label
+  indicating a confident claim maps loosely to "positive"). Document the
+  mapping and its limitations up front in the script and the README — it
+  is a proxy, not ground truth, and must be labeled as such everywhere
+  it's reported
+- Run `DemoStructuredProvider` (and `OpenAIStructuredProvider` if a key is
+  available) over a sample of TalkMoves student utterances, compare
+  against the proxy-mapped expected label, and report an **agreement
+  rate** — not "accuracy," since the mapping itself is a judgment call
+- New script `scripts/talkmoves_sentiment_check.py`, separate from the
+  CCS/BKT backtest path; does not modify `classify_sentiment`'s behavior
+
+**Definition of done:**
+- Script outputs an agreement-rate report with the proxy mapping shown
+  alongside the numbers so the caveat can't be missed
+- README's "Real classroom data validation" section gains one paragraph
+  distinguishing the existing ingestion/language-realism validation from
+  this new proxy sentiment-agreement check, in the same non-overclaiming
+  register as the rest of the doc
+
+---
+
+## Task 12 — Calibrate the CCS confidence score
+
+**Goal:** Check whether `CCSEngine`'s confidence number actually tracks
+empirical precision, using Task 10's expanded fixture set — and either fix
+it or clearly flag it as still uncalibrated.
+
+**Context:** `CCSResult.confidence` in `app/ccs.py` is currently
+`min(.96, .5 + evidence_points * .05)` — a plausible-looking formula that
+has never been checked against whether a "high confidence" score is
+actually more often correct than a "low confidence" one.
+
+**Constraints:**
+- Using the Task 10 fixture set, bucket each confirmed/warning state by
+  its reported confidence value and compute empirical precision within
+  each bucket (a basic calibration table, not a full reliability diagram)
+- If the current formula already tracks empirical precision reasonably,
+  leave `app/ccs.py` unchanged and document the check. If it doesn't,
+  adjust the formula's inputs (still using only fields already available,
+  e.g. counting distinct signal types rather than raw evidence count) and
+  re-run the Task 6/10 backtest to confirm precision/recall don't regress
+- Add the calibration check as a repeatable script (or extend
+  `scripts/backtest_ccs.py`) — don't hand-verify once and discard the method
+
+**Definition of done:**
+- A calibration table is produced and saved under `validation/`
+- README states plainly whether confidence is calibrated or still a
+  heuristic, replacing any precision the current unqualified formula implies
+- Existing CCS tests (sigmoid bounds, weighting) pass unchanged
+
+---
+
+## Task 13 — Outcome-linked nudge validation
+
+**Goal:** Check the one claim the project has never tested: does acting on
+a nudge actually improve the next poll's correctness? Tasks 6/10 validate
+*detection* timing; this validates whether the *response* helps.
+
+**Context:** This is the gap flagged in the education-track review — CCS
+and the nudge trigger are validated against authored ground truth, but
+nothing in the repo checks whether following through on a nudge's
+suggested reframing changes the outcome that follows it.
+
+**Constraints:**
+- There's no real classroom to run this against, so author matched
+  fixture pairs under a new `data/outcome_pairs/` directory (don't touch
+  the existing three demo fixtures or Task 10's set): for at least 2 of
+  the 3 concepts, a **control** variant (unchanged) and a **reframed**
+  variant where, right after the nudge-trigger point, the teacher line is
+  rewritten to reflect the kind of reframing `generate_nudge` would
+  produce for that concept, followed by an improved poll result at the
+  same point in the timeline
+- New script `scripts/backtest_nudge_outcome.py`: replay both arms of
+  each pair, record poll correctness immediately following the
+  nudge-trigger point, and report the control-vs-reframed delta per pair
+  and in aggregate
+- This is a small-n authored-script comparison, not a causal experiment —
+  say so explicitly in both the script's output and the README, the same
+  way Task 6/10 scope their claims
+- Add a `nudge_applied` boolean to the replayed event/session data so the
+  runtime and dashboard can visibly mark which arm is playing — useful
+  scaffolding for a future live A/B on real sessions, not required to be
+  wired into the live UI for this task
+
+**Definition of done:**
+- At least 2 matched control/reframed fixture pairs exist and replay
+  cleanly through the existing runtime unchanged
+- Running the script prints/writes per-pair and aggregate poll-correctness
+  deltas
+- README gets a short "Outcome validation" section stating exactly what
+  was checked (does a scripted reframing change the next poll's
+  correctness in these authored pairs) and what it does not establish
+  (real teacher behavior, real student learning, a causal effect at scale)
+- Existing fixtures, tests, and the one-command demo path are unchanged
+
+---
+
 ## Stretch tasks (only if Tasks 1-9 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,

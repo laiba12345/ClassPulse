@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import AsyncIterator
 
 DATA_DIR = Path(__file__).parents[1] / "data" / "classes"
+VALIDATION_DATA_DIR = Path(__file__).parents[1] / "data" / "validation_classes"
 
 
 @dataclass(frozen=True)
@@ -18,10 +19,10 @@ class ScriptedClass:
     events: list[dict]
 
     @classmethod
-    def load(cls, name: str) -> "ScriptedClass":
+    def load(cls, name: str, data_dir: Path = DATA_DIR) -> "ScriptedClass":
         filename = name if name.endswith(".json") else f"{name}.json"
-        path = (DATA_DIR / filename).resolve()
-        if path.parent != DATA_DIR.resolve() or not path.exists():
+        path = (data_dir / filename).resolve()
+        if path.parent != data_dir.resolve() or not path.exists():
             raise FileNotFoundError(f"Unknown scripted class: {name}")
         payload = json.loads(path.read_text(encoding="utf-8"))
         events = sorted(payload["events"], key=lambda event: event["at"])

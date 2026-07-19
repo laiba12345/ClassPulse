@@ -1,0 +1,14 @@
+{
+  "id": "algebra-slow-build", "title": "Solving Two-Step Equations", "concept": "algebra",
+  "students": ["Nia", "Ben", "Ravi", "Zoe"],
+  "ground_truth": {"confusion_window": {"start": 4, "end": 22}, "basis": "Uncertainty accumulates gradually across several students"},
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Mr. Chen", "text": "Solve 3x plus 5 equals 20 and explain each inverse operation."},
+    {"at": 4, "type": "chat", "speaker": "Nia", "text": "I think we divide by three first maybe?", "latency_seconds": 14},
+    {"at": 9, "type": "chat", "speaker": "Ben", "text": "Is it x equals five or x equals twenty five?", "latency_seconds": 20},
+    {"at": 14, "type": "chat", "speaker": "Ravi", "text": "Would we subtract five from only one side?", "latency_seconds": 27},
+    {"at": 18, "type": "chat", "speaker": "Zoe", "text": "I am not sure which operation comes first.", "latency_seconds": 32},
+    {"at": 22, "type": "poll", "question": "3x + 5 = 20 gives x = 5", "responses": {"Nia": false, "Ben": false, "Ravi": true, "Zoe": false}},
+    {"at": 27, "type": "teacher", "speaker": "Mr. Chen", "text": "Undo addition before multiplication and balance both sides."}
+  ]
+}

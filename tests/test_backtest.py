@@ -5,16 +5,19 @@ from scripts.backtest_ccs import backtest_all, backtest_fixture, write_report
 
 def test_each_fixture_reports_authored_window_precision_recall_and_poll_prediction():
     results = backtest_all()
-    assert len(results) == 3
+    assert len(results) == 9
     for result in results:
         assert result["fixture"]
         assert 0 <= result["window_precision"] <= 1
         assert 0 <= result["window_recall"] <= 1
         assert 0 <= result["early_warning_precision"] <= 1
         assert 0 <= result["early_warning_recall"] <= 1
-        assert result["confusion_points"] > 0
+        assert result["confusion_points"] >= 0
         assert result["polls"] >= 1
         assert isinstance(result["timeline"], list)
+
+    calm = next(result for result in results if result["fixture"] == "ecosystems-calm")
+    assert calm["confusion_points"] == 0
 
 
 def test_backtest_uses_pre_poll_score_without_poll_result_leakage():

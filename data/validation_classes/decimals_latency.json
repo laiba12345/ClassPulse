@@ -1,0 +1,13 @@
+{
+  "id": "decimals-latency", "title": "Comparing Decimals", "concept": "decimals",
+  "students": ["Ivy", "Drew", "Hana", "Paul"],
+  "ground_truth": {"confusion_window": {"start": 4, "end": 15}, "basis": "Long response delays and poll misses without explicit confusion terms"},
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Ms. Stone", "text": "Which is greater, 0.45 or 0.5?"},
+    {"at": 4, "type": "chat", "speaker": "Ivy", "text": "I chose 0.45 because 45 is larger than 5.", "latency_seconds": 38},
+    {"at": 9, "type": "chat", "speaker": "Drew", "text": "My answer is also 0.45.", "latency_seconds": 42},
+    {"at": 12, "type": "poll", "question": "0.5 is greater than 0.45", "responses": {"Ivy": false, "Drew": false, "Hana": true, "Paul": false}},
+    {"at": 15, "type": "chat", "speaker": "Paul", "text": "I got the opposite answer.", "latency_seconds": 35},
+    {"at": 20, "type": "teacher", "speaker": "Ms. Stone", "text": "Write 0.5 as 0.50 and compare place values."}
+  ]
+}

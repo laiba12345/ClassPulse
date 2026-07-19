@@ -12,15 +12,25 @@ if str(ROOT) not in sys.path:
 
 from app.llm import DemoStructuredProvider
 from app.runtime import ClassRuntime
-from app.stream import DATA_DIR, ScriptedClass
+from app.stream import DATA_DIR, VALIDATION_DATA_DIR, ScriptedClass
 
 DEFAULT_REPORT = ROOT / "validation" / "CCS_BACKTEST.md"
 
 
+def _fixture_path(name: str) -> Path:
+    filename = name if name.endswith(".json") else f"{name}.json"
+    for directory in (DATA_DIR, VALIDATION_DATA_DIR):
+        path = directory / filename
+        if path.exists():
+            return path
+    raise FileNotFoundError(name)
+
+
 async def _collect(name: str) -> dict:
-    raw = json.loads((DATA_DIR / f"{name}.json").read_text(encoding="utf-8"))
-    window = raw["ground_truth"]["confusion_window"]
-    runtime = ClassRuntime(ScriptedClass.load(name), DemoStructuredProvider())
+    path = _fixture_path(name)
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    window = raw["ground_truth"].get("confusion_window")
+    runtime = ClassRuntime(ScriptedClass.load(name, path.parent), DemoStructuredProvider())
     timeline: list[dict] = []
     polls: list[dict] = []
     current_event: dict | None = None
@@ -40,7 +50,8 @@ async def _collect(name: str) -> dict:
                 })
         elif message["kind"] == "ccs" and current_event:
             at = current_event["at"]
-            timeline.append({"at": at, "event_type": current_event["type"], "score": message["data"]["score"], "early_score": message["data"]["early_score"], "state": message["data"]["state"], "ground_truth_confused": window["start"] <= at <= window["end"]})
+            ground_truth_confused = bool(window and window["start"] <= at <= window["end"])
+            timeline.append({"at": at, "event_type": current_event["type"], "score": message["data"]["score"], "early_score": message["data"]["early_score"], "state": message["data"]["state"], "confidence": message["data"]["confidence"], "ground_truth_confused": ground_truth_confused})
     return {"raw": raw, "timeline": timeline, "polls": polls}
 
 
@@ -58,7 +69,7 @@ def backtest_fixture(name: str) -> dict:
     correct_predictions = sum(poll["predicted_miss"] == poll["actual_majority_miss"] for poll in polls)
     return {
         "fixture": collected["raw"]["id"], "title": collected["raw"]["title"],
-        "confusion_window": collected["raw"]["ground_truth"]["confusion_window"],
+        "confusion_window": collected["raw"]["ground_truth"].get("confusion_window"),
         "window_precision": round(tp / (tp + fp), 3) if tp + fp else 0,
         "window_recall": round(tp / (tp + fn), 3) if tp + fn else 0,
         "early_warning_precision": round(early_tp / (early_tp + early_fp), 3) if early_tp + early_fp else 0,
@@ -71,7 +82,8 @@ def backtest_fixture(name: str) -> dict:
 
 
 def backtest_all() -> list[dict]:
-    return [backtest_fixture(path.stem) for path in sorted(DATA_DIR.glob("*.json"))]
+    paths = list(DATA_DIR.glob("*.json")) + list(VALIDATION_DATA_DIR.glob("*.json"))
+    return [backtest_fixture(path.stem) for path in sorted(paths, key=lambda item: item.stem)]
 
 
 def write_report(results: list[dict], output: Path = DEFAULT_REPORT) -> Path:
@@ -86,7 +98,7 @@ def write_report(results: list[dict], output: Path = DEFAULT_REPORT) -> Path:
     early_precision = early_total["tp"] / (early_total["tp"] + early_total["fp"]) if early_total["tp"] + early_total["fp"] else 0
     early_recall = early_total["tp"] / (early_total["tp"] + early_total["fn"]) if early_total["tp"] + early_total["fn"] else 0
     lines = [
-        "# CCS Backtest", "", "Generated from the three authored ClassPulse fixtures using the production CCS path and deterministic demo sentiment provider.", "",
+        "# CCS Backtest", "", f"Generated from {len(results)} authored ClassPulse fixtures using the production CCS path and deterministic demo sentiment provider.", "",
         "| Fixture | Confirmed Precision | Confirmed Recall | Early Precision | Early Recall |", "|---|---:|---:|---:|---:|",
     ]
     for item in results:
@@ -96,7 +108,7 @@ def write_report(results: list[dict], output: Path = DEFAULT_REPORT) -> Path:
         f"- Early-warning precision: **{early_precision:.3f}**", f"- Early-warning recall: **{early_recall:.3f}**",
         f"- Confirmed pre-poll majority-miss prediction: **{poll_correct}/{poll_total}**", f"- Early-warning pre-poll prediction: **{early_poll_correct}/{poll_total}**",
         f"- Confirmed confusion matrix: `{total}`", f"- Early-warning confusion matrix: `{early_total}`", "",
-        "## Interpretation", "", "This is fixture backtesting, not real-world confusion accuracy. Authored windows test whether the current threshold behaves as intended in known demo moments. Poll prediction uses only the CCS from the previous event, preventing poll-result leakage. The sample is three deliberately constructed lessons and is too small for calibration, fairness, or deployment claims.", "",
+        "## Interpretation", "", f"This is fixture backtesting, not real-world confusion accuracy. Authored windows test whether the current threshold behaves as intended in known demo moments. Poll prediction uses only the CCS from the previous event, preventing poll-result leakage. The sample is {len(results)} deliberately constructed lessons—including slow-building, poll-only, false-alarm, latency-only, recovery, and calm patterns—and remains too small for fairness or deployment claims.", "",
         "## Machine-readable detail", "", "```json", json.dumps(results, indent=2), "```", "",
     ]
     output.write_text("\n".join(lines), encoding="utf-8")

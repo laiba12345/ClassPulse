@@ -1,0 +1,12 @@
+{
+  "id": "geometry-poll-only", "title": "Area of Triangles", "concept": "geometry",
+  "students": ["Tariq", "Eva", "Cole", "Mina"],
+  "ground_truth": {"confusion_window": {"start": 10, "end": 14}, "basis": "Confusion is visible only in poll outcomes"},
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Mr. Park", "text": "Find the area of a triangle with base eight and height five."},
+    {"at": 4, "type": "chat", "speaker": "Tariq", "text": "I multiplied eight times five.", "latency_seconds": 7},
+    {"at": 7, "type": "chat", "speaker": "Eva", "text": "My answer is forty square units.", "latency_seconds": 8},
+    {"at": 10, "type": "poll", "question": "The area is 20 square units", "responses": {"Tariq": false, "Eva": false, "Cole": false, "Mina": true}},
+    {"at": 14, "type": "teacher", "speaker": "Mr. Park", "text": "A triangle is half of its matching rectangle."}
+  ]
+}

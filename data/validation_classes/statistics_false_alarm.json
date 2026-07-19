@@ -1,0 +1,12 @@
+{
+  "id": "statistics-false-alarm", "title": "Reading a Bar Chart", "concept": "statistics",
+  "students": ["Ada", "Luis", "Mei", "Jon"],
+  "ground_truth": {"confusion_window": null, "basis": "Negated confusion language in an otherwise correct lesson"},
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Ms. Ali", "text": "Which category has the tallest bar?"},
+    {"at": 4, "type": "chat", "speaker": "Ada", "text": "I'm not confused, right? The blue bar is tallest.", "latency_seconds": 8},
+    {"at": 7, "type": "chat", "speaker": "Luis", "text": "I think blue because it reaches twelve.", "latency_seconds": 9},
+    {"at": 10, "type": "poll", "question": "Blue is the largest category", "responses": {"Ada": true, "Luis": true, "Mei": true, "Jon": true}},
+    {"at": 14, "type": "teacher", "speaker": "Ms. Ali", "text": "Correct; height represents frequency."}
+  ]
+}
