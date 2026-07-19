@@ -51,7 +51,7 @@ async def _collect(name: str) -> dict:
         elif message["kind"] == "ccs" and current_event:
             at = current_event["at"]
             ground_truth_confused = bool(window and window["start"] <= at <= window["end"])
-            timeline.append({"at": at, "event_type": current_event["type"], "score": message["data"]["score"], "early_score": message["data"]["early_score"], "state": message["data"]["state"], "confidence": message["data"]["confidence"], "ground_truth_confused": ground_truth_confused})
+            timeline.append({"at": at, "event_type": current_event["type"], "score": message["data"]["score"], "early_score": message["data"]["early_score"], "state": message["data"]["state"], "evidence_quality": message["data"]["evidence_quality"], "ground_truth_confused": ground_truth_confused})
     return {"raw": raw, "timeline": timeline, "polls": polls}
 
 

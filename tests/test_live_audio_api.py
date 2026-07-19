@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 import app.main as main_module
 from app.transcription import DiarizedSegment
+import time
 
 client = TestClient(main_module.app)
 
@@ -58,3 +59,17 @@ def test_live_poll_is_accepted_for_outcome_measurement():
     })
     assert response.status_code == 202
     assert response.json()["event"]["source"] == "live_poll"
+
+
+def test_transcription_timeout_is_bounded_and_visible(monkeypatch):
+    class SlowTranscriber:
+        model = "slow"
+        def transcribe(self, audio, filename):
+            time.sleep(.05)
+            return []
+    monkeypatch.setattr(main_module, "transcriber", SlowTranscriber())
+    monkeypatch.setattr(main_module, "TRANSCRIPTION_TIMEOUT", .01)
+    session = client.post("/api/sessions", json={"fixture_id": "forces-live", "mode": "live"}).json()
+    response = client.post(f"/api/sessions/{session['session_id']}/audio-chunks", content=b"audio")
+    assert response.status_code == 504
+    assert "timed out" in response.json()["detail"].lower()

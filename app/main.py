@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import asyncio
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request, status
@@ -26,6 +28,7 @@ app = FastAPI(title="ClassPulse", version="1.0.0")
 app.mount("/static", StaticFiles(directory=PUBLIC), name="static")
 session_registry = SessionRegistry(build_provider, build_memory)
 transcriber = build_transcriber()
+TRANSCRIPTION_TIMEOUT = float(os.getenv("CLASSPULSE_TRANSCRIPTION_TIMEOUT", "30"))
 legacy_sessions: dict[str, str] = {}
 
 
@@ -139,7 +142,9 @@ async def session_audio_chunk(
     if transcriber is None:
         raise HTTPException(503, "OPENAI_API_KEY is required for live transcription")
     try:
-        segments = await run_in_threadpool(transcriber.transcribe, audio, filename)
+        segments = await asyncio.wait_for(run_in_threadpool(transcriber.transcribe, audio, filename), timeout=TRANSCRIPTION_TIMEOUT)
+    except asyncio.TimeoutError as error:
+        raise HTTPException(504, "Transcription timed out; no transcript was fabricated") from error
     except Exception as error:
         raise HTTPException(502, f"Transcription failed: {error}") from error
     events = [

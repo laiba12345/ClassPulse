@@ -14,7 +14,7 @@ The Python test suite covers:
 - complete runtime production of transcript, CCS, mastery, and nudge messages;
 - live student submissions entering the same runtime queue and `process_event` path as scripted events, with SSE/API/UI tagging;
 - concurrent sessions maintaining independent queues, CCS scores, mastery, stream URLs, and lifecycle status;
-- TalkMoves sentiment proxy agreement, CCS confidence buckets, and matched nudge-outcome arm linkage;
+- TalkMoves sentiment proxy agreement, CCS evidence-quality buckets, and matched nudge-outcome arm linkage;
 - ClassBank CHAT speaker parsing, millisecond timestamp preservation, media/provenance metadata, and existing-runtime compatibility;
 - FastAPI health/catalog endpoints, SSE delivery, static dashboard delivery;
 - presence of the live transcript, CCS gauge, nudge panel, mastery table, and EventSource client.
@@ -58,15 +58,22 @@ The separate poll-independent early-warning path produced:
 
 The pre-poll calculation uses the score from the prior event, so the poll result cannot leak into its own prediction. The early score excludes poll outcomes, while confirmed CCS retains them. Evidence is time-decayed and student breadth is normalized against the active roster. Because this remains a tiny authored set used during development, the result may be overfit and must be replicated on held-out educator labels. Full timelines are in [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md).
 
-## CCS confidence calibration
+## CCS evidence-quality check
 
-Twenty warning/confirmed event points were grouped by displayed confidence. Replacing raw evidence counts with distinct signal types, student breadth, and confirmation state prevents repeated events from mechanically inflating confidence, but the resulting bucket table remains non-monotonic with a **0.242 weighted absolute gap**. Confidence is therefore reported as an uncalibrated evidence-quality heuristic, not an alert-correctness probability. Details are in [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
+Warning/confirmed event points were grouped by displayed evidence quality. Distinct signal types, student breadth, and confirmation state prevent repeated events from mechanically inflating this value. The authored-fixture buckets remain non-monotonic, so evidence quality is explicitly not an alert-correctness probability. Details are in [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
 
 ## Authored nudge-outcome linkage
 
 Two matched pairs replay through the production runtime with explicit `nudge_applied` markers. Fractions and forces both show authored next-poll correctness changing from **0.250 control** to **1.000 reframed** (**+0.750** each and in aggregate). This validates trigger-to-next-poll linkage and matched-arm analysis. Because outcomes are authored by construction and there are no real participants or randomization, it is not evidence of a causal learning effect. Details are in [validation/NUDGE_OUTCOME_BACKTEST.md](./validation/NUDGE_OUTCOME_BACKTEST.md).
 
 ## Real-server smoke test
+
+The Task 23 smoke test ran Uvicorn on `127.0.0.1:8877` in deterministic demo
+mode. It created a persistent live session, consumed SSE, submitted one live
+confused-language event and one live poll, observed `event`, `ccs`, and
+`mastery` messages containing `evidence_quality`, stopped the session, and
+received `complete`. This validates server lifecycle and live wiring, not
+classroom efficacy or OpenAI latency.
 
 Uvicorn was launched on a real localhost socket and verified independently of FastAPI’s in-process test client:
 

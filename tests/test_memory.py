@@ -1,4 +1,5 @@
 from pathlib import Path
+import sqlite3
 from uuid import uuid4
 
 from app.bkt import BKTTracker
@@ -50,6 +51,22 @@ def test_memory_records_update_timestamp_and_counts():
         stored = memory.load_states()[("Amina", "photosynthesis")]
         assert stored["observations"] == 1
         assert stored["updated_at"]
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_legacy_classwide_ccs_mastery_is_invalidated_once():
+    path = _db_path()
+    try:
+        connection = sqlite3.connect(path)
+        connection.execute("CREATE TABLE mastery_states (student_id TEXT NOT NULL, concept TEXT NOT NULL, mastery REAL NOT NULL, observations INTEGER NOT NULL, correct INTEGER NOT NULL, soft_updates INTEGER NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (student_id, concept))")
+        connection.execute("INSERT INTO mastery_states VALUES ('A', 'fractions', .12, 2, 1, 20, 'legacy')")
+        connection.commit(); connection.close()
+        memory = MasteryMemory(path)
+        assert memory.load_states() == {}
+        # The migration marker prevents repeatedly deleting valid v2 states.
+        tracker = BKTTracker(memory=memory); tracker.update_mastery("A", "fractions", True)
+        assert MasteryMemory(path).load_states()[("A", "fractions")]["observations"] == 1
     finally:
         path.unlink(missing_ok=True)
 

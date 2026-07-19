@@ -25,6 +25,7 @@ class MasteryMemory:
     def _initialize(self) -> None:
         with closing(self._connect()) as connection:
             with connection:
+                existed = connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mastery_states'").fetchone() is not None
                 connection.execute("""
                 CREATE TABLE IF NOT EXISTS mastery_states (
                     student_id TEXT NOT NULL,
@@ -37,6 +38,13 @@ class MasteryMemory:
                     PRIMARY KEY (student_id, concept)
                 )
                 """)
+                connection.execute("CREATE TABLE IF NOT EXISTS model_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+                boundary = connection.execute("SELECT value FROM model_metadata WHERE key='individual_evidence_boundary'").fetchone()
+                if existed and boundary is None:
+                    # Legacy states mixed class-wide CCS into every learner and
+                    # cannot be reconstructed faithfully from aggregates.
+                    connection.execute("DELETE FROM mastery_states")
+                connection.execute("INSERT OR REPLACE INTO model_metadata (key, value) VALUES ('individual_evidence_boundary', 'v2')")
 
     def load_states(self) -> dict[tuple[str, str], dict]:
         with closing(self._connect()) as connection:

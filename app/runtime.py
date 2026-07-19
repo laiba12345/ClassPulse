@@ -17,7 +17,7 @@ logger = logging.getLogger("classpulse.runtime")
 
 
 class ClassRuntime:
-    def __init__(self, lesson: ScriptedClass, provider: StructuredProvider, memory=None, session_id: str | None = None, live_mode: bool = False):
+    def __init__(self, lesson: ScriptedClass, provider: StructuredProvider, memory=None, session_id: str | None = None, live_mode: bool = False, model_timeout: float = 8.0):
         self.lesson, self.provider = lesson, provider
         self.outcomes = OutcomeTracker()
         self.ccs, self.bkt, self.nudges = CCSEngine(), BKTTracker(memory=memory), NudgeEngine(provider, outcomes=self.outcomes)
@@ -36,6 +36,17 @@ class ClassRuntime:
         self.last_poll_correctness: float | None = None
         self.status = "created"
         self.live_mode = live_mode
+        self.model_timeout = model_timeout
+        self.processed_event_ids: set[str] = set()
+
+    async def _model_call(self, operation: str, function, *args):
+        try:
+            return await asyncio.wait_for(asyncio.to_thread(function, *args), timeout=self.model_timeout), None
+        except asyncio.TimeoutError:
+            return None, {"operation": operation, "error": "timeout", "message": f"{operation} model call timed out", "provider": self.provider.mode, "session_id": self.session_id}
+        except Exception as error:
+            logger.warning("model call failed operation=%s provider=%s error=%s", operation, self.provider.mode, error)
+            return None, {"operation": operation, "error": "provider_error", "message": str(error), "provider": self.provider.mode, "session_id": self.session_id}
 
     def _window(self) -> SignalWindow:
         return SignalWindow(
@@ -100,29 +111,41 @@ class ClassRuntime:
             self.event_queue.put_nowait(None)
 
     async def process_event(self, event: dict) -> AsyncIterator[dict]:
+        event_id = event.get("id")
+        if event_id and event_id in self.processed_event_ids:
+            yield {"kind": "duplicate_ignored", "data": {"event_id": event_id, "session_id": self.session_id}}
+            return
+        if event_id:
+            self.processed_event_ids.add(event_id)
         event.setdefault("source", "scripted"); event.setdefault("live", False); event["session_id"] = self.session_id
         self.processed_sources.append(event["source"]); self.current_at = event.get("at", self.current_at)
         yield {"kind": "event", "data": event}
-        if event["type"] in ("teacher", "chat"):
-            sentiment = self.provider.classify_sentiment(event["text"])
-            event["learning_state"] = sentiment.model_dump()
-        if event["type"] == "teacher":
-            risk = self.provider.analyze_explanation(self.lesson.concept, event["text"])
-            yield {"kind": "explanation_risk", "data": {**risk.model_dump(), "session_id": self.session_id, "at": self.current_at}}
+        sentiment = None
         if event["type"] == "chat":
-            effective_label = "confused" if sentiment.confusion_probability >= .5 else sentiment.sentiment
-            self.sentiments.append((effective_label, sentiment.confusion_probability))
-            self.sentiment_events.append((effective_label, sentiment.confusion_probability, self.current_at, event.get("speaker", "")))
+            sentiment, error = await self._model_call("sentiment", self.provider.classify_sentiment, event["text"])
+            if error:
+                yield {"kind": "model_error", "data": error}
+            else:
+                event["learning_state"] = sentiment.model_dump()
+        if event["type"] == "teacher":
+            risk, error = await self._model_call("explanation_risk", self.provider.analyze_explanation, self.lesson.concept, event["text"])
+            if error:
+                yield {"kind": "model_error", "data": error}
+            else:
+                yield {"kind": "explanation_risk", "data": {**risk.model_dump(), "session_id": self.session_id, "at": self.current_at}}
+        if event["type"] == "chat":
+            if sentiment is not None:
+                effective_label = "confused" if sentiment.confusion_probability >= .5 else sentiment.sentiment
+                self.sentiments.append((effective_label, sentiment.confusion_probability))
+                self.sentiment_events.append((effective_label, sentiment.confusion_probability, self.current_at, event.get("speaker", "")))
             latency = float(event.get("latency_seconds", 0)); self.latencies.append(latency)
             self.latency_events.append((latency, self.current_at))
             keyword_count = self.ccs.keyword_count(event["text"]); self.keyword_flags += keyword_count
             self.keyword_events.append((keyword_count, self.current_at))
             self.student_ids.append(event.get("speaker", ""))
             self.quotes.append(event["text"])
-            self.bkt.update_mastery(
-                event.get("speaker", "Unknown"), self.lesson.concept,
-                correct=None, language_confusion=sentiment.confusion_probability,
-            )
+            if sentiment is not None and sentiment.sentiment == "confused" and sentiment.confusion_probability >= .5:
+                self.bkt.update_mastery(event.get("speaker", "Unknown"), self.lesson.concept, correct=None, language_confusion=sentiment.confusion_probability)
         elif event["type"] == "poll":
             answers = list(event["responses"].values()); self.poll_correct.extend(answers)
             self.last_poll_correctness = sum(answers) / len(answers)
@@ -136,10 +159,15 @@ class ClassRuntime:
         yield {"kind": "ccs", "data": {**result.as_dict(), "session_id": self.session_id}}
         if event["type"] in ("chat", "poll"):
             yield {"kind": "mastery", "data": {"students": self.bkt.snapshot(self.lesson.concept, self.lesson.students), "session_id": self.session_id}}
-        nudge = self.nudges.consider(self.lesson.concept, result.score, result.evidence)
-        if nudge:
+        selection = self.nudges.prepare(self.lesson.concept, result.score)
+        if selection:
+            strategy, mode, reason = selection
+            nudge, error = await self._model_call("nudge", self.provider.generate_nudge, self.lesson.concept, result.evidence, strategy, mode, reason)
+            if error:
+                yield {"kind": "model_error", "data": error}
+                return
             outcome = self.outcomes.register(self.lesson.concept, self.current_at, self.last_poll_correctness, strategy=nudge.strategy)
-            yield {"kind": "nudge", "data": {**nudge.model_dump(), "nudge_id": outcome.nudge_id, "confidence": result.confidence, "evidence": result.evidence, "limitations": result.limitations, "llm_mode": self.provider.mode, "session_id": self.session_id}}
+            yield {"kind": "nudge", "data": {**nudge.model_dump(), "nudge_id": outcome.nudge_id, "evidence_quality": result.evidence_quality, "evidence": result.evidence, "limitations": result.limitations, "llm_mode": self.provider.mode, "session_id": self.session_id}}
 
     async def _produce_replay(self, speed: float) -> None:
         if self.live_mode:

@@ -76,6 +76,22 @@ arrives after each audio window plus API latency. Speaker labels are model
 estimates and the teacher ID may need changing. Outcome deltas are observational
 and do not establish that a nudge caused learning.
 
+## Reliability and evidence boundaries
+
+- Class-wide CCS affects intervention timing only; it never directly changes
+  every learner's BKT state.
+- A poll updates only its respondents. Individual language updates only its
+  speaker and only when classified confused with probability at least `0.50`;
+  positive and neutral language is a no-op for mastery.
+- Event IDs are deduplicated, preventing one utterance from being applied twice.
+- Sentiment, explanation-risk, and nudge calls run off the event loop with an
+  eight-second bound. Transcription has a configurable 30-second bound
+  (`CLASSPULSE_TRANSCRIPTION_TIMEOUT`). Failures emit `model_error` SSE events
+  or an explicit HTTP error; no successful model result is fabricated.
+- Legacy persisted mastery created under the former class-wide CCS rule is
+  invalidated once because its individual states cannot be reconstructed.
+- CCS exposes **evidence quality**, not confidence or probability.
+
 ## Architecture
 
 ### Repository layout
@@ -175,7 +191,7 @@ See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture t
 
 ### Confidence calibration
 
-Run `py scripts/calibrate_ccs_confidence.py` to bucket warning/confirmed events by displayed confidence and compare each bucket with empirical authored-window precision. The formula now rewards distinct signal types, student breadth, and confirmed state rather than repeated raw evidence counts. The current nine-fixture check has a **0.242 weighted absolute gap** and non-monotonic buckets, so confidence is **still uncalibrated**. It is an evidence-quality heuristic, not a probability that an alert is correct. See [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
+Run `py scripts/calibrate_ccs_confidence.py` to bucket warning/confirmed events by displayed evidence quality and compare each bucket with empirical authored-window precision. The formula rewards distinct signal types, student breadth, and confirmed state rather than repeated raw evidence counts. The current authored-fixture check is explicitly uncalibrated: evidence quality is a heuristic, not a probability that an alert is correct. See [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
 
 ## Outcome validation
 
@@ -232,7 +248,7 @@ Restart the demo and imported lessons appear in the lesson selector. See [data/c
 - Fixtures replace real audio and platform integrations.
 - ClassBank imports use authentic recorded-lesson transcripts, but ClassPulse does not redistribute the protected media or yet transcribe its audio itself.
 - Live typed messages have no trustworthy response-latency value, so their latency contribution is zero; language and subsequent poll signals still apply normally.
-- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against nine diverse authored fixtures, but it is not trained on deployment data; expanded-set confirmed recall is only 0.269 and displayed confidence remains uncalibrated.
+- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against nine diverse authored fixtures, but it is not trained on deployment data; expanded-set confirmed recall is only 0.269 and displayed evidence quality remains uncalibrated.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.
 - SQLite persistence is local to this demo instance and has no authentication, roster reconciliation, or school data-retention policy.
@@ -264,7 +280,7 @@ I then used the more precise briefs in [`TASK_BRIEFS.md`](./TASK_BRIEFS.md). Rep
 - Support isolated concurrent sessions while preserving the zero-setup single-class demo.
 - Expand the CCS backtest without retuning weights merely to improve reported numbers.
 - Compare TalkMoves discourse labels with a documented sentiment proxy and report “agreement,” never “accuracy.”
-- Check confidence calibration and explicitly label it uncalibrated if the evidence did not support a probability claim.
+- Check evidence-quality calibration and explicitly avoid a probability claim when authentic held-out evidence does not support one.
 - Add matched nudge-outcome scenarios while stating that authored improvements are not a causal experiment.
 - Import authenticated ClassBank CHAT transcripts without redistributing protected classroom data.
 
@@ -280,7 +296,7 @@ Codex implemented and iteratively verified:
 - Deterministic BKT updates and SQLite persistence with prior-session mastery deltas.
 - GPT‑5.6 Responses API adapters using strict Structured Outputs for learning-state classification and teaching nudges, plus an honestly labeled deterministic fallback.
 - The live dashboard: transcript, CCS components, warning state, nudge panel, mastery table, live-input controls, active-session cards, and recorded-ClassBank labels.
-- TalkMoves ingestion and provenance reporting, expanded authored validation fixtures, confidence calibration analysis, matched nudge-outcome fixtures, and ClassBank CHAT import tooling.
+- TalkMoves ingestion and provenance reporting, expanded authored validation fixtures, evidence-quality analysis, matched nudge-outcome fixtures, and ClassBank CHAT import tooling.
 - Windows and Unix one-command launch scripts, `.env` loading, documentation, evaluation reports, and the separate task-level Git history.
 
 Codex also diagnosed issues found during integration rather than hiding them—for example, a session compatibility regression, a nudge-outcome poll linked before the reframe, duplicate anonymized ClassBank participant names, and the expanded fixture set’s substantially weaker recall.
@@ -294,7 +310,7 @@ I retained responsibility for the product and evidence decisions:
 - I required the demo to distinguish simulated, typed-live, recorded-live-class, and genuinely model-generated data instead of presenting all inputs as live audio.
 - I rejected the idea that TalkMoves proxy agreement could be called sentiment “accuracy,” because its human labels describe discourse moves rather than confusion.
 - I rejected post-hoc CCS retuning solely to make three authored fixtures look better. The expanded nine-fixture benchmark therefore reports the weaker recall it actually found.
-- I rejected calling displayed CCS confidence a calibrated probability after the bucket analysis remained non-monotonic with a 0.242 weighted gap.
+- I rejected displaying CCS evidence quality as a probability after the authored-fixture bucket analysis remained non-monotonic.
 - I rejected treating the +0.750 authored nudge-outcome delta as evidence that nudges cause learning; it validates linkage and A/B scaffolding only.
 - I decided to use ClassBank/TIMSS-Math as the path toward authentic recorded lessons, while keeping protected transcripts and media local and out of Git.
 - I identified live microphone capture and streaming speech-to-text as the next major product step. The current ClassBank integration replays human transcripts at recorded timestamps; it does not claim to be live microphone transcription.

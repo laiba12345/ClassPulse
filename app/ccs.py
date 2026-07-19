@@ -34,7 +34,7 @@ class CCSResult:
     latency_signal: float
     poll_miss_rate: float
     evidence: dict
-    confidence: float
+    evidence_quality: float
     limitations: str
 
     def as_dict(self) -> dict:
@@ -105,10 +105,10 @@ class CCSEngine:
             "unique_students_signaling": len(set(student_ids)), "active_students": window.active_students,
         }
         distinct_signals = sum(signal > 0 for signal in (sentiment, keyword, latency, poll_miss))
-        confidence = min(.92, .45 + .08 * distinct_signals + .12 * breadth + (.08 if state == "confirmed" else 0))
+        evidence_quality = min(.92, .45 + .08 * distinct_signals + .12 * breadth + (.08 if state == "confirmed" else 0))
         return CCSResult(
             round(value, 3), round(early_value, 3), state, self.warning_threshold, self.confirmed_threshold,
             round(sentiment, 3), round(keyword, 3), round(latency, 3), round(poll_miss, 3),
-            evidence, round(confidence, 2),
+            evidence, round(evidence_quality, 2),
             "CCS estimates confusion from observed language, latency, and polls; silence and non-verbal cues are not captured.",
         )
