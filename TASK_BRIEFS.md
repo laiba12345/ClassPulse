@@ -501,7 +501,195 @@ routing, decision validation, outcome linkage, API behavior, and live sessions.
 
 ---
 
-## Stretch tasks (only if Tasks 1-19 are done and fully working with time left)
+## Winning-differentiation phase (complete in order)
+
+These tasks strengthen the product itself, not the submission video or Devpost
+packaging. They are deliberately narrower than the out-of-scope ClassroomOS
+vision. Do not add a generic chatbot, lesson generator, cross-teacher memory,
+or unvalidated claims merely to make the feature list longer.
+
+## Task 20 — Close the intervention feedback loop
+
+**Goal:** Make ClassPulse improve which kind of intervention it recommends
+from the teacher's decision and the next observed poll, rather than only
+recording those outcomes after the fact.
+
+**Why this matters:** The distinctive product claim should be: ClassPulse not
+only detects confusion and suggests an intervention; it records whether the
+teacher applied it and whether the next check improved, then uses that evidence
+when choosing a later intervention strategy in the same session.
+
+**Constraints:**
+- Define a small, explicit intervention taxonomy such as `visual_model`,
+  `worked_example`, `contrast_case`, `analogy`, and `student_explanation`;
+  put the selected `strategy` in the strict nudge Structured Output schema
+- Keep strategy scoring deterministic and inspectable; GPT-5.6 writes the
+  strategy-specific wording but does not calculate outcome statistics or pick
+  winners from opaque free-form history
+- Update strategy evidence only when a teacher has explicitly marked a nudge
+  Applied or Dismissed and a later poll has been observed; pending nudges,
+  dismissed nudges, and missing baselines must not be treated as successful
+- Use within-session, per-concept evidence only. Do not build the out-of-scope
+  cross-session Teacher Memory Agent or imply that one observation proves a
+  strategy is effective
+- With sparse or tied evidence, use a documented neutral/default exploration
+  rule; never label a strategy "best" without sufficient observations
+- Tests first, including applied/improved, applied/worse, dismissed, no-next-
+  poll, sparse-data, and session-isolation cases
+
+**Definition of done:**
+- Every generated nudge has a typed strategy and a concise explanation of why
+  that strategy was selected
+- The outcome tracker exposes per-strategy attempts and observed deltas without
+  causal language
+- A second confusion spike can select a strategy using earlier valid evidence,
+  and a deterministic integration test proves the full feedback loop
+- The dashboard shows the selected strategy and a small "session evidence"
+  summary that distinguishes exploration from evidence-informed selection
+
+---
+
+## Task 21 — Build a blinded educator nudge-evaluation workflow
+
+**Goal:** Replace developer opinion about nudge quality with a reproducible way
+for real educators to rate whether interventions are useful, safe, specific,
+and feasible during a live lesson.
+
+**Constraints:**
+- Create an export script that produces a de-identified, randomized evaluation
+  packet containing the concept, necessary transcript window, evidence, and
+  nudge; hide provider name and whether the nudge came from GPT-5.6 or the
+  deterministic baseline
+- Use a fixed 1–5 rubric for instructional usefulness, specificity, factual
+  correctness, classroom feasibility, and risk of harmful student labeling;
+  include an optional short comment and an overall use/reject decision
+- Create a separate import/report script for completed ratings. Report sample
+  size, number of raters, per-dimension distributions, use rate, and inter-rater
+  agreement when at least two educators rate overlapping items
+- Never fabricate educator identities, ratings, quotes, or agreement. The agent
+  may build and test the workflow with fixtures clearly labeled `synthetic_test`,
+  but real results remain "not yet collected" until supplied by real reviewers
+- Store no student names or protected classroom text in exported packets; use
+  authored fixtures or properly authorized/de-identified excerpts only
+- Do not make a network survey service or add authentication; portable JSON/CSV
+  plus a simple local HTML rating form is sufficient
+
+**Definition of done:**
+- One command exports a randomized blinded packet and opens/runs a lightweight
+  local rating form; another command validates and summarizes returned ratings
+- Automated tests cover randomization reproducibility, provider blinding,
+  schema validation, missing values, aggregation, and privacy-safe export
+- `validation/EDUCATOR_NUDGE_EVALUATION.md` clearly separates workflow smoke-
+  test results from authentic educator results
+- README explains exactly how an educator can complete the evaluation in under
+  ten minutes and how new real results should be regenerated
+
+---
+
+## Task 22 — Add held-out confusion annotation and evaluation
+
+**Goal:** Create a credible path from authored-fixture behavior tests to
+educator-labeled confusion evaluation on transcript windows the CCS developer
+did not use while tuning thresholds.
+
+**Constraints:**
+- Build an annotation schema and local tool for educators to label transcript
+  windows as `calm`, `possible_confusion`, `confirmed_confusion`, or
+  `insufficient_context`, plus the evidence source and optional concept note
+- Keep the held-out set physically and logically separate from calibration
+  fixtures. The production thresholds must be frozen before evaluating a
+  held-out batch; record the configuration hash in the report
+- Exclude `insufficient_context` from primary precision/recall while reporting
+  its count. Report confusion matrices, precision, recall, F1, false-alert
+  timelines, and pre-poll performance without poll-result leakage
+- Support agreement reporting for overlapping educator annotations and retain
+  disagreements rather than silently resolving them in favor of the model
+- Do not convert TalkMoves discourse labels into confusion ground truth and do
+  not generate synthetic "human" labels. If no authentic annotations have
+  been collected, ship the tested workflow and state that evaluation is pending
+- Avoid committing protected transcripts or personally identifying information
+
+**Definition of done:**
+- Annotation export/import and evaluation commands are documented and tested
+- The evaluator refuses calibration fixtures, malformed labels, leaked future
+  poll outcomes, or a configuration hash mismatch
+- A generated report labels the dataset provenance, rater count, held-out
+  status, exclusions, metrics, limitations, and whether results are synthetic
+  smoke tests or authentic educator annotations
+- No deployment-accuracy or efficacy claim appears until authentic held-out
+  annotations support it
+
+---
+
+## Task 23 — Harden educational-model validity and live reliability
+
+**Goal:** Remove remaining modeling and runtime choices that could undermine
+judge confidence even when the dashboard appears to work.
+
+**Constraints:**
+- Preserve the corrected evidence boundary: an individual chat may softly
+  update only that speaker's mastery, an answer may update only that respondent,
+  and class-wide CCS may trigger a class intervention but must never directly
+  reduce every student's BKT state
+- Do not lower mastery for positive or effectively neutral language merely
+  because `confusion_probability` is nonzero; define and test a neutral zone or
+  signed/thresholded student-language update with an explicit rationale
+- Audit repeated soft updates so one utterance is applied exactly once and a
+  persistent class-wide spike cannot compound individual mastery without new
+  evidence from that student
+- Move synchronous GPT-5.6 classification/generation work off the FastAPI event
+  loop or use an async client, while preserving event order per session and
+  isolation across concurrent sessions
+- Add bounded timeout/error handling for sentiment, explanation-risk,
+  transcription, and nudge generation. A failed optional model call must be
+  visibly reported and must not fabricate a successful GPT-5.6 result
+- Rename displayed CCS `confidence` to "evidence quality" everywhere unless
+  Task 22 produces authentic calibration sufficient to justify probability-like
+  language
+
+**Definition of done:**
+- Focused tests prove student-specific, once-only mastery updates for confused,
+  neutral, positive, absent, and poll evidence
+- A concurrency test proves one slow provider call does not freeze unrelated
+  sessions, and timeout/provider-error tests prove honest degraded behavior
+- Existing 0.40 warning and 0.60 confirmed behavior remains reproducible or any
+  deliberate change is accompanied by regenerated validation reports
+- Full automated suite and a real-server live-session smoke test pass
+
+---
+
+## Task 24 — Establish a distinctive product identity
+
+**Goal:** Avoid confusion with the pre-existing Devpost education project named
+"ClassPulse" and make the closed intervention-feedback loop recognizable in one
+sentence.
+
+**Blocking user decision:** Before implementation, present 3–5 researched,
+available candidate names and concise positioning lines. Do not rename files,
+UI, package metadata, or documentation until the user explicitly chooses one.
+
+**Constraints:**
+- Search Devpost, GitHub, common package registries, and the public web for each
+  candidate; document collisions and treat this as a practical naming screen,
+  not legal trademark clearance
+- The positioning must foreground the differentiator delivered by Task 20:
+  detect confusion, recommend an evidence-backed teaching move, observe the
+  next check, and improve strategy selection
+- Once approved, update product-facing text consistently without renaming the
+  internal Python `app` package or breaking API paths unnecessarily
+- Preserve dataset attribution and do not copy visual identity or language from
+  another education product
+
+**Definition of done:**
+- User-approved name and one-sentence positioning replace ClassPulse across UI,
+  README, demo fixtures' presentation metadata, API title, and launch docs
+- A repository search finds no stale user-facing ClassPulse branding except a
+  migration note acknowledging the former name
+- All tests and the one-command demo pass after the rename
+
+---
+
+## Stretch tasks (only if Tasks 1-24 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT
