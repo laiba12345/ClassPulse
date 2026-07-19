@@ -28,9 +28,17 @@ class BKTTracker:
     def get(self, student_id: str, concept: str) -> float:
         return self._state(student_id, concept).mastery
 
-    def update_mastery(self, student_id: str, concept: str, correct: bool | None, ccs: float | None) -> float:
-        if correct is None and ccs is None:
-            raise ValueError("correctness evidence, CCS evidence, or both are required")
+    def update_mastery(self, student_id: str, concept: str, correct: bool | None, ccs: float | None = None, language_confusion: float | None = None) -> float:
+        """Update from this student's evidence only.
+
+        ``ccs`` remains as a compatibility alias for older callers; new code
+        should pass the student's own ``language_confusion`` probability.
+        """
+        if ccs is not None and language_confusion is not None:
+            raise ValueError("pass either ccs or language_confusion, not both")
+        soft_signal = language_confusion if language_confusion is not None else ccs
+        if correct is None and soft_signal is None:
+            raise ValueError("correctness or individual language evidence is required")
         state = self._state(student_id, concept); mastery = state.mastery
         if correct is not None:
             if correct:
@@ -40,8 +48,8 @@ class BKTTracker:
                 posterior = mastery * self.slip / (mastery * self.slip + (1 - mastery) * (1 - self.guess))
             mastery = posterior + (1 - posterior) * self.learn
             state.observations += 1
-        if ccs is not None:
-            mastery -= self.ccs_lambda * max(0.0, min(1.0, ccs)) * mastery
+        if soft_signal is not None:
+            mastery -= self.ccs_lambda * max(0.0, min(1.0, soft_signal)) * mastery
             state.soft_updates += 1
         state.mastery = round(max(.01, min(.99, mastery)), 4)
         if self.memory:
@@ -57,7 +65,7 @@ class BKTTracker:
                 "student_id": student.lower().replace(" ", "-"), "name": student, "concept": concept,
                 "mastery": state.mastery, "observations": state.observations,
                 "confidence": round(min(.95, .4 + .1 * state.observations + .025 * state.soft_updates), 2),
-                "evidence": f"{state.observations} graded and {state.soft_updates} CCS soft-evidence updates.",
+                "evidence": f"{state.observations} graded and {state.soft_updates} individual-language updates.",
                 "limitations": "BKT is an estimate based on the current scripted session, not a fixed learner label.",
                 "has_prior_session": prior is not None,
                 "session_delta": round(state.mastery - prior, 4) if prior is not None else None,

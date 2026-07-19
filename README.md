@@ -110,7 +110,7 @@ poll correctness ─────────────────────
 ```
 
 - `app/stream.py`: validated fixture catalog and ordered asynchronous replay.
-- `app/ccs.py`: deterministic signal features and bounded sigmoid fusion.
+- `app/ccs.py`: deterministic class-level signal features and bounded sigmoid fusion; CCS drives nudges but never changes every student's mastery.
 - `app/classbank.py`: time-aligned TalkBank CHAT parsing and ClassPulse conversion.
 - `app/bkt.py`: deterministic BKT with explicit and soft evidence.
 - `app/memory.py`: SQLite mastery repository with timestamped upserts and restart-safe loading.

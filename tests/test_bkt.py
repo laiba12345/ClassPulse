@@ -10,10 +10,10 @@ def test_repeated_incorrect_answers_keep_mastery_low():
     for _ in range(8): tracker.update_mastery("sarah", "fractions", correct=False, ccs=None)
     assert tracker.get("sarah", "fractions") < .2
 
-def test_high_ccs_is_modest_soft_evidence():
+def test_individual_language_confusion_is_modest_soft_evidence():
     explicit = BKTTracker(initial_mastery=.6); soft = BKTTracker(initial_mastery=.6)
     explicit.update_mastery("s", "c", correct=False, ccs=None)
-    soft.update_mastery("s", "c", correct=None, ccs=.9)
+    soft.update_mastery("s", "c", correct=None, language_confusion=.9)
     assert .6 > soft.get("s", "c") > explicit.get("s", "c")
 
 def test_combined_evidence_is_supported_and_bounded():

@@ -119,6 +119,10 @@ class ClassRuntime:
             self.keyword_events.append((keyword_count, self.current_at))
             self.student_ids.append(event.get("speaker", ""))
             self.quotes.append(event["text"])
+            self.bkt.update_mastery(
+                event.get("speaker", "Unknown"), self.lesson.concept,
+                correct=None, language_confusion=sentiment.confusion_probability,
+            )
         elif event["type"] == "poll":
             answers = list(event["responses"].values()); self.poll_correct.extend(answers)
             self.last_poll_correctness = sum(answers) / len(answers)
@@ -131,8 +135,6 @@ class ClassRuntime:
         logger.info("CCS concept=%s score=%.3f evidence=%s", self.lesson.concept, result.score, result.evidence)
         yield {"kind": "ccs", "data": {**result.as_dict(), "session_id": self.session_id}}
         if event["type"] in ("chat", "poll"):
-            for student in self.lesson.students:
-                self.bkt.update_mastery(student, self.lesson.concept, correct=None, ccs=result.score)
             yield {"kind": "mastery", "data": {"students": self.bkt.snapshot(self.lesson.concept, self.lesson.students), "session_id": self.session_id}}
         nudge = self.nudges.consider(self.lesson.concept, result.score, result.evidence)
         if nudge:
