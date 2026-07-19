@@ -12,6 +12,7 @@ The Python test suite covers:
 - GPT‑5.6 model selection and strict sentiment/nudge JSON schemas;
 - exactly one concept-specific nudge per spike and no calm nudge;
 - complete runtime production of transcript, CCS, mastery, and nudge messages;
+- live student submissions entering the same runtime queue and `process_event` path as scripted events, with SSE/API/UI tagging;
 - FastAPI health/catalog endpoints, SSE delivery, static dashboard delivery;
 - presence of the live transcript, CCS gauge, nudge panel, mastery table, and EventSource client.
 

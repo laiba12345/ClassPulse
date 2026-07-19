@@ -27,3 +27,11 @@ def test_real_dataset_evidence_endpoint():
     payload = response.json()
     assert payload["dataset"] == "TalkMoves"
     assert payload["total_rows"] > 2000
+
+def test_live_input_enters_same_sse_stream_with_visible_tag():
+    submitted = client.post("/api/live-input/forces-live", json={"student_id": "Live Guest", "text": "I am confused about the force", "timestamp": "2026-07-19T10:00:00Z"})
+    assert submitted.status_code == 202
+    with client.stream("GET", "/api/stream/forces-live?speed=10000") as response:
+        text = "".join(response.iter_text())
+    assert '"live": true' in text
+    assert "Live Guest" in text

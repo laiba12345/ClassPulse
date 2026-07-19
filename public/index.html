@@ -10,13 +10,19 @@
   <header class="topbar">
     <a class="brand" href="/"><span class="brand-mark">CP</span><span>Class<span>Pulse</span></span></a>
     <div class="lesson-meta"><span class="live-dot"></span><div><small>LIVE CLASS</small><strong id="lessonTitle">Preparing lesson…</strong></div></div>
-    <div class="controls"><label>Scenario<select id="lessonSelect" aria-label="Choose scripted class"></select></label><label>Speed<select id="speedSelect" aria-label="Playback speed"><option value="1">1×</option><option value="3" selected>3×</option><option value="8">8×</option></select></label><button id="restartButton">↻ Replay</button></div>
+    <div class="controls"><label>Scenario<select id="lessonSelect" aria-label="Choose scripted class"></select></label><label>Speed<select id="speedSelect" aria-label="Playback speed"><option value="1">1×</option><option value="3" selected>3×</option><option value="8">8×</option></select></label><button id="liveInputToggle" class="input-toggle">＋ Live student</button><button id="restartButton">↻ Replay</button></div>
   </header>
 
   <main>
     <section class="hero">
       <div><p class="eyebrow">REAL-TIME TEACHING COPILOT</p><h1>See confusion.<br><em>Respond in the moment.</em></h1><p>ClassPulse fuses student language, response latency, and poll outcomes while tracking mastery per learner.</p></div>
       <div class="provider" id="providerBadge"><i></i><span><small>INTELLIGENCE MODE</small><strong>Connecting…</strong></span></div>
+    </section>
+    <section id="liveInputPanel" class="live-input-panel" hidden>
+      <div><p class="eyebrow">NON-SCRIPTED INPUT</p><strong>Type as a student</strong><span>Uses the exact same CCS/BKT pipeline. Live messages are visibly tagged.</span></div>
+      <input id="liveStudentId" aria-label="Live student name" maxlength="80" value="Guest Student" placeholder="Student name">
+      <input id="liveText" aria-label="Live student message" maxlength="1000" placeholder="I’m confused about…">
+      <button id="sendLiveInput">Send live</button>
     </section>
 
     <section class="stats">

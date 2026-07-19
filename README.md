@@ -33,6 +33,7 @@ py -m pip install -r requirements.txt
 5. When CCS first crosses `0.60`, the nudge engine calls GPT‑5.6 with strict Structured Outputs. It does not fire again until the score falls below the reset threshold.
 6. The single dashboard updates through Server-Sent Events without refresh: transcript, CCS gauge/components, nudge, and mastery table.
 7. BKT state is persisted to SQLite after every update. A restarted session begins from the previous ending mastery and shows the change since that prior session.
+8. An optional “Live student” drawer accepts non-scripted chat during replay. Those events enter the same runtime queue and processing function as fixture events and are visibly tagged.
 
 ## GPT‑5.6 configuration
 
@@ -109,6 +110,7 @@ See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture t
 | BKT mastery | Real deterministic probabilistic computation |
 | Mastery across restarts | SQLite persistence in `data/classpulse.db` |
 | Browser updates | Real SSE stream |
+| Student chat typed during demo | Real input through the shared runtime queue |
 | Raw audio, database, multiple classes/teachers, memory agent | Out of scope |
 
 ## Real classroom data validation
@@ -130,6 +132,7 @@ Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset p
 ## Limitations
 
 - Fixtures replace real audio and platform integrations.
+- Live typed messages have no trustworthy response-latency value, so their latency contribution is zero; language and subsequent poll signals still apply normally.
 - Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against three authored windows, but it is not trained or calibrated on deployment data and showed only 0.500 recall.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.

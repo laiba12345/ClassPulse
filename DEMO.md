@@ -8,6 +8,8 @@ Run `./run_demo.ps1`. The browser opens and the Fractions class begins automatic
 
 Teacher speech, student chat, response latency, and a poll arrive in timestamp order. Explain that this simulates an online-class transcript and poll feed; raw audio is deliberately out of scope.
 
+Open **Live student**, type a message such as “I’m confused about why eight is not bigger,” and send it. The visibly tagged message enters the same sentiment, CCS, BKT, and nudge path as scripted chat—this part of the input is genuinely live.
+
 ## Show confusion detection
 
 As several students express denominator confusion and miss the poll, the CCS gauge rises. Its four component bars expose sentiment, keyword, latency, and poll evidence. The score is deterministic and bounded by a weighted sigmoid.
