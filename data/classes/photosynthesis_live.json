@@ -1,6 +1,7 @@
 {
   "id": "photosynthesis-live", "title": "Where Plant Mass Comes From", "concept": "photosynthesis",
   "students": ["Amina", "Noah", "Elena", "Kai"],
+  "ground_truth": {"confusion_window": {"start": 4, "end": 14}, "basis": "Authored soil-as-food misconception and poll misses"},
   "events": [
     {"at": 0, "type": "teacher", "speaker": "Mr. Chen", "text": "Where does most of a growing tree's mass come from?"},
     {"at": 4, "type": "chat", "speaker": "Kai", "text": "It eats the soil through its roots.", "latency_seconds": 15},

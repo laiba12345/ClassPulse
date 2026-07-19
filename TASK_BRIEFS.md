@@ -130,12 +130,145 @@ student mastery per concept.
 
 ---
 
-## Stretch tasks (only if Tasks 1-5 are done and fully working with time left)
+## Task 6 — Backtest CCS/BKT against authored ground truth
+
+**Goal:** Turn the hand-picked CCS weights and BKT priors from a plausible
+heuristic into a validated-against-something claim, using data that
+already exists in this repo.
+
+**Context:** Each fixture in `data/classes/*.json` has at least one
+deliberate confusion moment authored into the script — that's a known
+ground-truth window. We haven't ever checked whether CCS actually crosses
+threshold there and stays below it elsewhere. We also have poll results
+after each confusion moment, which give a weak proxy label: did elevated
+CCS actually predict the next poll miss in the same fixture?
+
+**Constraints:**
+- New script `scripts/backtest_ccs.py`, no changes to the deterministic
+  math in `app/ccs.py` or `app/bkt.py` unless the backtest reveals a clear
+  bug (don't retune weights just to make the backtest look good — report
+  what's true)
+- For each fixture: replay it, record CCS over time, compare against the
+  authored confusion window (precision/recall — did it cross 0.6 inside
+  the window, stay below outside it)
+- Report whether a CCS spike predicted the subsequent poll miss in the
+  same fixture, across all three fixtures
+- Output a short markdown or JSON summary, not just console prints
+
+**Definition of done:**
+- Running the script against all three fixtures prints/writes a
+  precision/recall style summary per fixture
+- README gets a short "Validation" note linking to the summary, replacing
+  the unqualified "hand-picked, not validated" limitation with what was
+  actually checked and what still isn't (this is still not accuracy
+  against real confusion labels — say so)
+
+---
+
+## Task 7 — Persist mastery across sessions (Teacher Memory Agent, scoped)
+
+**Goal:** Answer "what happens next class" — mastery and nudge history
+should survive a restart instead of resetting every run.
+
+**Context:** `AGENTS.md` explicitly allows SQLite. `BKTTracker.states` in
+`app/bkt.py` is in-memory only and dies with the process. This also
+covers the original stretch idea of a Teacher Memory Agent (§4.3, style-tag
+stats across sessions) but scoped down to what's demoable: persisted
+mastery, not a separate style-tagging subsystem.
+
+**Constraints:**
+- New `app/memory.py` wrapping a SQLite file (e.g. `data/classpulse.db`),
+  storing `(student_id, concept) -> MasteryState` plus a timestamp per
+  update
+- `BKTTracker` loads prior state on construction and `memory.py` persists
+  on every `update_mastery` call (or on a short flush interval — pick
+  whichever keeps `update_mastery`'s signature and return value unchanged)
+- Dashboard mastery table shows a small delta/trend indicator ("+0.08
+  since last session") when prior-session data exists for that student/
+  concept; shows nothing extra on a first-ever run
+- Must not break existing BKT tests — add new tests for load/persist
+  round-trip instead of modifying `tests/test_bkt.py`'s existing cases
+
+**Definition of done:**
+- Running the same fixture twice in a row (restarting the server between
+  runs) shows the second run's mastery table starting from the first
+  run's ending values, with the delta visible in the UI
+- Tests cover: state persists across a `BKTTracker` restart, and a
+  first-ever run behaves identically to the current in-memory-only
+  behavior
+
+---
+
+## Task 8 — Live (non-scripted) student input channel
+
+**Goal:** Let the CCS pipeline run on at least one real, non-scripted
+input stream during a live demo, without touching real audio/STT (still
+out of scope).
+
+**Context:** Teacher speech stays scripted — that's a separate, solved
+problem, not this project's contribution. Student chat is the cheap real
+part: a person can type live messages during the demo and they should
+flow through the exact same `SignalWindow` / CCS path as replayed fixture
+chat lines.
+
+**Constraints:**
+- Add a WebSocket (or POST) input endpoint in `app/main.py` that accepts
+  `{student_id, text, timestamp}` and feeds it into the same event queue
+  `app/runtime.py` already reads from — do not fork the CCS/BKT pipeline,
+  live and replayed events must be indistinguishable downstream
+- Dashboard gets a minimal "type as a student" input box, off by default,
+  toggled on per session so scripted-only demos are unaffected
+- Live-typed lines must be visually tagged in the transcript feed (e.g.
+  "live" badge) so it's never confused with the scripted replay in a demo
+  recording
+
+**Definition of done:**
+- With the live input box open, typed messages appear in the transcript,
+  affect CCS, and can trigger a nudge exactly like scripted lines
+- A test confirms a live-submitted event reaches the same CCS computation
+  as a replayed one (same function, same code path)
+
+---
+
+## Task 9 — Multiple concurrent class sessions
+
+**Goal:** Support more than one class running at once, so the product
+story is "a school," not "one classroom on one screen."
+
+**Context:** `runtime.py` and `main.py` currently assume a single global
+running class. This task parameterizes that by `session_id` so multiple
+independent replays (or live sessions from Task 8) can run side by side.
+
+**Constraints:**
+- `RuntimeLoop` (or equivalent in `app/runtime.py`) takes a `session_id`;
+  `app/main.py` keeps a `dict[str, RuntimeLoop]` instead of one instance
+- New routes: `POST /api/sessions` (start a session from a fixture),
+  `GET /stream/{session_id}` (SSE for that session), `GET /api/sessions`
+  (list active sessions with current CCS/concept for each)
+- Add a landing page (or a mode on the existing one) listing active
+  sessions with a mini CCS indicator per session, linking into the
+  existing single-session dashboard unchanged
+- Existing single-session behavior (`run_demo.ps1`/`.sh`) must keep
+  working with zero extra steps — auto-create one default session if
+  none specified, so the one-command demo path in `README.md` doesn't
+  change
+
+**Definition of done:**
+- Two fixtures can be replayed concurrently in two browser tabs with
+  independent CCS/mastery state and no cross-talk
+- `./run_demo.sh` still launches straight into a single working dashboard
+  with no manual session setup required
+- Existing tests pass unchanged; new tests cover session isolation (two
+  sessions' CCS/BKT state never leak into each other)
+
+---
+
+## Stretch tasks (only if Tasks 1-9 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT
-- Teacher Memory Agent (§4.3): persisted style-tag stats across multiple
-  scripted classes, not just the current session
+- Full Teacher Memory Agent (§4.3): style-tag stats across sessions,
+  beyond the mastery persistence already covered by Task 7
 
-Do not start these until the core 5 tasks are solid — a fully working
+Do not start these until the core tasks are solid — a fully working
 core loop beats a partially working full system for judging.

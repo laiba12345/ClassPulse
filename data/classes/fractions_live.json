@@ -3,6 +3,7 @@
   "title": "Comparing Fractions",
   "concept": "fractions",
   "students": ["Sarah", "Marcus", "Priya", "Leo"],
+  "ground_truth": {"confusion_window": {"start": 4, "end": 13}, "basis": "Authored denominator-magnitude misconception and initial poll misses"},
   "events": [
     {"at": 0, "type": "teacher", "speaker": "Ms. Morgan", "text": "Which is greater: one fourth or one eighth? Explain why."},
     {"at": 4, "type": "chat", "speaker": "Sarah", "text": "I think one eighth because eight is bigger than four.", "latency_seconds": 18},

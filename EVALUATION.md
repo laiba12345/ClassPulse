@@ -33,6 +33,17 @@ Official TalkMoves public test splits were loaded from the SumnerLab release:
 
 This validates operation on real classroom language and authentic discourse annotations. TalkMoves has no confusion, latency, poll, or mastery labels, so it is not reported as a CCS accuracy benchmark.
 
+## Authored-fixture CCS backtest
+
+The production CCS path was replayed against explicit confusion windows in all three scripted fixtures:
+
+- Aggregate precision: **0.857**
+- Aggregate recall: **0.500**
+- Confusion matrix: TP 6, FP 1, TN 4, FN 6
+- Pre-poll majority-miss prediction: **0/4**
+
+The pre-poll calculation uses the score from the prior event, so the poll result cannot leak into its own prediction. These results show late/reactive detection rather than reliable early warning. No post-hoc weight tuning was performed. Full timelines are in [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md).
+
 ## Real-server smoke test
 
 Uvicorn was launched on a real localhost socket and verified independently of FastAPI’s in-process test client:

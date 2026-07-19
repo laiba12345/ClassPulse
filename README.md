@@ -85,6 +85,18 @@ py -m pytest
 
 The suite verifies event order/timestamps, all three fixtures, calm/confused CCS, sigmoid bounds, BKT correctness and CCS soft-evidence weighting, both strict OpenAI schemas, one nudge per spike, calm suppression, full runtime integration, SSE delivery, APIs, and required dashboard surfaces.
 
+## CCS validation
+
+Run the reproducible authored-fixture backtest with:
+
+```powershell
+py scripts/backtest_ccs.py
+```
+
+Current aggregate results are **0.857 precision** and **0.500 recall** against the explicitly annotated confusion windows. Pre-poll CCS predicted **0 of 4** subsequent majority-miss outcomes when only the previous event’s score was used, preventing poll-result leakage. This shows that the current score identifies some in-window confusion but is not an early poll-miss predictor in this tiny authored set. The weights were not retuned after seeing the result.
+
+See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture timelines and machine-readable detail. This is fixture behavior validation, not accuracy against real classroom confusion labels.
+
 ## Simulated versus real
 
 | Component | Status |
@@ -115,7 +127,7 @@ Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset p
 ## Limitations
 
 - Fixtures replace real audio and platform integrations.
-- Initial CCS weights and BKT parameters are expert defaults, not trained on deployment data.
+- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against three authored windows, but it is not trained or calibrated on deployment data and showed only 0.500 recall.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.
 - Automated tests mock the Responses transport; a live GPT‑5.6 call requires the user’s valid API key and account access.

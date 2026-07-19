@@ -1,6 +1,7 @@
 {
   "id": "forces-live", "title": "Balanced Forces and Motion", "concept": "forces",
   "students": ["Maya", "Owen", "Iris", "Sam"],
+  "ground_truth": {"confusion_window": {"start": 4, "end": 14}, "basis": "Authored force-required-for-motion misconception and poll misses"},
   "events": [
     {"at": 0, "type": "teacher", "speaker": "Dr. Patel", "text": "Can an object move when the net force is zero?"},
     {"at": 4, "type": "chat", "speaker": "Owen", "text": "No, it needs a force or it stops.", "latency_seconds": 19},
