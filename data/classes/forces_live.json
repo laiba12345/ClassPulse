@@ -1,0 +1,11 @@
+{
+  "id": "forces-live", "title": "Balanced Forces and Motion", "concept": "forces",
+  "students": ["Maya", "Owen", "Iris", "Sam"],
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Dr. Patel", "text": "Can an object move when the net force is zero?"},
+    {"at": 4, "type": "chat", "speaker": "Owen", "text": "No, it needs a force or it stops.", "latency_seconds": 19},
+    {"at": 7, "type": "chat", "speaker": "Maya", "text": "I'm not sure. Moving means a forward force, right?", "latency_seconds": 26},
+    {"at": 10, "type": "poll", "question": "Zero net force permits constant velocity", "responses": {"Maya": false, "Owen": false, "Iris": true, "Sam": false}},
+    {"at": 14, "type": "chat", "speaker": "Sam", "text": "This is confusing because no force sounds like no motion.", "latency_seconds": 35}
+  ]
+}

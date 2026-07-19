@@ -1,0 +1,15 @@
+{
+  "id": "fractions-live",
+  "title": "Comparing Fractions",
+  "concept": "fractions",
+  "students": ["Sarah", "Marcus", "Priya", "Leo"],
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Ms. Morgan", "text": "Which is greater: one fourth or one eighth? Explain why."},
+    {"at": 4, "type": "chat", "speaker": "Sarah", "text": "I think one eighth because eight is bigger than four.", "latency_seconds": 18},
+    {"at": 7, "type": "chat", "speaker": "Priya", "text": "I am confused. Does a bigger bottom number make it bigger?", "latency_seconds": 24},
+    {"at": 10, "type": "poll", "question": "1/4 > 1/8", "responses": {"Sarah": false, "Marcus": true, "Priya": false, "Leo": false}},
+    {"at": 13, "type": "chat", "speaker": "Leo", "text": "Not sure, I chose one eighth too.", "latency_seconds": 31},
+    {"at": 17, "type": "teacher", "speaker": "Ms. Morgan", "text": "Let us compare equal-sized fraction bars."},
+    {"at": 20, "type": "poll", "question": "After the model: 1/4 > 1/8", "responses": {"Sarah": true, "Marcus": true, "Priya": true, "Leo": true}}
+  ]
+}

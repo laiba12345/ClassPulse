@@ -1,0 +1,11 @@
+{
+  "id": "photosynthesis-live", "title": "Where Plant Mass Comes From", "concept": "photosynthesis",
+  "students": ["Amina", "Noah", "Elena", "Kai"],
+  "events": [
+    {"at": 0, "type": "teacher", "speaker": "Mr. Chen", "text": "Where does most of a growing tree's mass come from?"},
+    {"at": 4, "type": "chat", "speaker": "Kai", "text": "It eats the soil through its roots.", "latency_seconds": 15},
+    {"at": 7, "type": "chat", "speaker": "Amina", "text": "I don't understand how air can become wood.", "latency_seconds": 28},
+    {"at": 10, "type": "poll", "question": "Most plant carbon comes from CO2", "responses": {"Amina": false, "Noah": true, "Elena": false, "Kai": false}},
+    {"at": 14, "type": "chat", "speaker": "Elena", "text": "Maybe the food is already inside the dirt?", "latency_seconds": 33}
+  ]
+}
