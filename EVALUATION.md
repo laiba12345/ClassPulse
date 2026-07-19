@@ -15,10 +15,11 @@ The Python test suite covers:
 - live student submissions entering the same runtime queue and `process_event` path as scripted events, with SSE/API/UI tagging;
 - concurrent sessions maintaining independent queues, CCS scores, mastery, stream URLs, and lifecycle status;
 - TalkMoves sentiment proxy agreement, CCS confidence buckets, and matched nudge-outcome arm linkage;
+- ClassBank CHAT speaker parsing, millisecond timestamp preservation, media/provenance metadata, and existing-runtime compatibility;
 - FastAPI health/catalog endpoints, SSE delivery, static dashboard delivery;
 - presence of the live transcript, CCS gauge, nudge panel, mastery table, and EventSource client.
 
-Final implementation checkpoint after Tasks 10–13: **46 passed, 0 failed**. Ten deprecation warnings originate inside FastAPI under Python 3.14; no ClassPulse warning or failure was emitted. `node --check public/app.js` also passed.
+Final implementation checkpoint after ClassBank integration: **48 passed, 0 failed**. Ten deprecation warnings originate inside FastAPI under Python 3.14; no ClassPulse warning or failure was emitted. `node --check public/app.js` also passed.
 
 ## Real-data validation
 

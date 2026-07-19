@@ -33,7 +33,7 @@ class SessionRegistry:
 
     def create(self, fixture_id: str, session_id: str | None = None) -> SessionRecord:
         fixture_id = fixture_id.replace("_", "-")
-        lesson = ScriptedClass.load(fixture_id.replace("-", "_"))
+        lesson = ScriptedClass.load_available(fixture_id.replace("-", "_"))
         session_id = session_id or uuid4().hex[:12]
         if session_id in self.sessions:
             raise ValueError(f"Session already exists: {session_id}")

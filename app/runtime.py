@@ -94,14 +94,14 @@ class ClassRuntime:
 
     async def _produce_replay(self, speed: float) -> None:
         async for event in replay_events(self.lesson, speed):
-            event["source"] = "scripted"; event["live"] = False
+            event["source"] = self.lesson.source; event["live"] = False
             await self.event_queue.put(event)
         await self.event_queue.put(None)
 
     async def run(self, speed=1.0) -> AsyncIterator[dict]:
         self.started = True
         self.status = "running"
-        yield {"kind": "session", "data": {"lesson": self.lesson.title, "concept": self.lesson.concept, "students": self.lesson.students, "llm_mode": self.provider.mode, "session_id": self.session_id, "nudge_applied": self.lesson.nudge_applied}}
+        yield {"kind": "session", "data": {"lesson": self.lesson.title, "concept": self.lesson.concept, "students": self.lesson.students, "llm_mode": self.provider.mode, "session_id": self.session_id, "nudge_applied": self.lesson.nudge_applied, "source": self.lesson.source, "source_metadata": self.lesson.source_metadata}}
         yield {"kind": "mastery", "data": {"students": self.bkt.snapshot(self.lesson.concept, self.lesson.students), "initial": True, "session_id": self.session_id}}
         producer = asyncio.create_task(self._produce_replay(speed))
         while True:

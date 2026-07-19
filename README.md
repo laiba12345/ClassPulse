@@ -64,6 +64,7 @@ app/          FastAPI service and CCS, BKT, LLM, session, and persistence module
 data/classes/ Authored live-class fixtures and confusion ground truth
 data/validation_classes/ Additional authored benchmark-only scenarios
 data/outcome_pairs/ Matched authored control/reframed outcome scenarios
+data/classbank/ Local-only authenticated ClassBank transcripts and media
 data/real/    Licensed TalkMoves classroom-language validation data
 public/       Dependency-free dashboard assets
 scripts/      Reproducible evaluation utilities
@@ -89,6 +90,7 @@ poll correctness ─────────────────────
 
 - `app/stream.py`: validated fixture catalog and ordered asynchronous replay.
 - `app/ccs.py`: deterministic signal features and bounded sigmoid fusion.
+- `app/classbank.py`: time-aligned TalkBank CHAT parsing and ClassPulse conversion.
 - `app/bkt.py`: deterministic BKT with explicit and soft evidence.
 - `app/memory.py`: SQLite mastery repository with timestamped upserts and restart-safe loading.
 - `app/llm.py`: strict schemas, OpenAI Responses adapter, and labeled demo provider.
@@ -162,9 +164,22 @@ Run `py scripts/talkmoves_sentiment_check.py` to compare classifier output with 
 
 Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset paper: [Suresh et al.](https://arxiv.org/abs/2204.09652). See [`data/real/talkmoves/DATASET.md`](./data/real/talkmoves/DATASET.md) for attribution and usage boundaries.
 
+## Recorded live-class lessons with ClassBank
+
+ClassPulse can import authentic ClassBank TIMSS-Math CHAT transcripts and replay them through the same runtime at their recorded utterance timestamps. Imported teacher and student turns appear in the normal transcript and CCS pipeline with a visible `RECORDED CLASSBANK` marker; session metadata retains the corpus citation and optional local media path.
+
+ClassBank requires registration, and its transcript/media server was not reachable from this build environment, so protected lessons are **not bundled or redistributed**. After downloading through your TalkBank account, run:
+
+```powershell
+py scripts/import_classbank.py data/classbank/raw --concept mathematics --media-dir data/classbank/media
+```
+
+Restart the demo and imported lessons appear in the lesson selector. See [data/classbank/README.md](./data/classbank/README.md) for acquisition, citation, privacy, and folder instructions. This integration replays human transcripts from recorded live classes; microphone capture and streaming speech-to-text remain a separate implementation step.
+
 ## Limitations
 
 - Fixtures replace real audio and platform integrations.
+- ClassBank imports use authentic recorded-lesson transcripts, but ClassPulse does not redistribute the protected media or yet transcribe its audio itself.
 - Live typed messages have no trustworthy response-latency value, so their latency contribution is zero; language and subsequent poll signals still apply normally.
 - Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against nine diverse authored fixtures, but it is not trained on deployment data; expanded-set confirmed recall is only 0.269 and displayed confidence remains uncalibrated.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
