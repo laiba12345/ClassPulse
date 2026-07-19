@@ -78,7 +78,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -87,7 +87,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.31,
         "early_score": 0.42,
         "state": "warning",
-        "confidence": 0.6,
+        "confidence": 0.72,
         "ground_truth_confused": true
       },
       {
@@ -96,7 +96,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.319,
         "early_score": 0.445,
         "state": "warning",
-        "confidence": 0.7,
+        "confidence": 0.75,
         "ground_truth_confused": true
       },
       {
@@ -105,7 +105,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.264,
         "early_score": 0.393,
         "state": "calm",
-        "confidence": 0.8,
+        "confidence": 0.77,
         "ground_truth_confused": true
       },
       {
@@ -114,7 +114,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.386,
         "early_score": 0.544,
         "state": "warning",
-        "confidence": 0.9,
+        "confidence": 0.79,
         "ground_truth_confused": true
       },
       {
@@ -123,7 +123,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.66,
         "early_score": 0.48,
         "state": "confirmed",
-        "confidence": 0.96,
+        "confidence": 0.92,
         "ground_truth_confused": true
       },
       {
@@ -132,7 +132,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.551,
         "early_score": 0.413,
         "state": "warning",
-        "confidence": 0.96,
+        "confidence": 0.84,
         "ground_truth_confused": false
       }
     ]
@@ -182,7 +182,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -191,7 +191,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.205,
         "early_score": 0.294,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.56,
         "ground_truth_confused": true
       },
       {
@@ -200,7 +200,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.214,
         "early_score": 0.318,
         "state": "calm",
-        "confidence": 0.7,
+        "confidence": 0.59,
         "ground_truth_confused": true
       },
       {
@@ -209,7 +209,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.49,
         "early_score": 0.296,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.66,
         "ground_truth_confused": true
       },
       {
@@ -218,7 +218,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.546,
         "early_score": 0.391,
         "state": "calm",
-        "confidence": 0.96,
+        "confidence": 0.76,
         "ground_truth_confused": true
       },
       {
@@ -227,7 +227,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.451,
         "early_score": 0.341,
         "state": "calm",
-        "confidence": 0.96,
+        "confidence": 0.75,
         "ground_truth_confused": false
       }
     ]
@@ -274,7 +274,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -283,7 +283,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.109,
         "early_score": 0.165,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.48,
         "ground_truth_confused": false
       },
       {
@@ -292,7 +292,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.118,
         "early_score": 0.187,
         "state": "calm",
-        "confidence": 0.7,
+        "confidence": 0.51,
         "ground_truth_confused": false
       },
       {
@@ -301,7 +301,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.116,
         "early_score": 0.182,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.5,
         "ground_truth_confused": false
       },
       {
@@ -310,7 +310,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.114,
         "early_score": 0.177,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.49,
         "ground_truth_confused": false
       }
     ]
@@ -360,7 +360,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -369,7 +369,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.135,
         "early_score": 0.2,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.56,
         "ground_truth_confused": true
       },
       {
@@ -378,7 +378,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.393,
         "early_score": 0.527,
         "state": "warning",
-        "confidence": 0.7,
+        "confidence": 0.75,
         "ground_truth_confused": true
       },
       {
@@ -396,7 +396,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.601,
         "early_score": 0.455,
         "state": "confirmed",
-        "confidence": 0.96,
+        "confidence": 0.92,
         "ground_truth_confused": true
       }
     ]
@@ -456,7 +456,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -465,7 +465,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.132,
         "early_score": 0.196,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.56,
         "ground_truth_confused": true
       },
       {
@@ -474,7 +474,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.323,
         "early_score": 0.451,
         "state": "warning",
-        "confidence": 0.7,
+        "confidence": 0.75,
         "ground_truth_confused": true
       },
       {
@@ -492,7 +492,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.724,
         "early_score": 0.584,
         "state": "confirmed",
-        "confidence": 0.96,
+        "confidence": 0.92,
         "ground_truth_confused": true
       },
       {
@@ -501,7 +501,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.635,
         "early_score": 0.515,
         "state": "confirmed",
-        "confidence": 0.96,
+        "confidence": 0.92,
         "ground_truth_confused": false
       },
       {
@@ -510,7 +510,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.451,
         "early_score": 0.469,
         "state": "warning",
-        "confidence": 0.96,
+        "confidence": 0.83,
         "ground_truth_confused": false
       }
     ]
@@ -560,7 +560,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -569,7 +569,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.109,
         "early_score": 0.165,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.48,
         "ground_truth_confused": false
       },
       {
@@ -578,7 +578,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.118,
         "early_score": 0.187,
         "state": "calm",
-        "confidence": 0.7,
+        "confidence": 0.51,
         "ground_truth_confused": false
       },
       {
@@ -587,7 +587,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.337,
         "early_score": 0.182,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.58,
         "ground_truth_confused": true
       },
       {
@@ -596,7 +596,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.294,
         "early_score": 0.177,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.57,
         "ground_truth_confused": true
       }
     ]
@@ -646,7 +646,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -655,7 +655,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.123,
         "early_score": 0.184,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.56,
         "ground_truth_confused": true
       },
       {
@@ -664,7 +664,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.327,
         "early_score": 0.455,
         "state": "warning",
-        "confidence": 0.7,
+        "confidence": 0.75,
         "ground_truth_confused": true
       },
       {
@@ -682,7 +682,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.679,
         "early_score": 0.54,
         "state": "confirmed",
-        "confidence": 0.96,
+        "confidence": 0.92,
         "ground_truth_confused": true
       }
     ]
@@ -742,7 +742,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -751,7 +751,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.158,
         "early_score": 0.232,
         "state": "calm",
-        "confidence": 0.6,
+        "confidence": 0.64,
         "ground_truth_confused": true
       },
       {
@@ -760,7 +760,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.366,
         "early_score": 0.497,
         "state": "warning",
-        "confidence": 0.7,
+        "confidence": 0.75,
         "ground_truth_confused": true
       },
       {
@@ -769,7 +769,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.534,
         "early_score": 0.44,
         "state": "warning",
-        "confidence": 0.9,
+        "confidence": 0.82,
         "ground_truth_confused": true
       },
       {
@@ -778,7 +778,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.341,
         "early_score": 0.316,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.8,
         "ground_truth_confused": false
       },
       {
@@ -787,7 +787,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.261,
         "early_score": 0.267,
         "state": "calm",
-        "confidence": 0.96,
+        "confidence": 0.81,
         "ground_truth_confused": false
       },
       {
@@ -796,7 +796,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.198,
         "early_score": 0.247,
         "state": "calm",
-        "confidence": 0.96,
+        "confidence": 0.81,
         "ground_truth_confused": false
       }
     ]
@@ -843,7 +843,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.1,
         "early_score": 0.142,
         "state": "calm",
-        "confidence": 0.5,
+        "confidence": 0.45,
         "ground_truth_confused": false
       },
       {
@@ -852,7 +852,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.468,
         "early_score": 0.586,
         "state": "warning",
-        "confidence": 0.6,
+        "confidence": 0.64,
         "ground_truth_confused": false
       },
       {
@@ -861,7 +861,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.293,
         "early_score": 0.416,
         "state": "warning",
-        "confidence": 0.7,
+        "confidence": 0.67,
         "ground_truth_confused": false
       },
       {
@@ -870,7 +870,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.267,
         "early_score": 0.382,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.66,
         "ground_truth_confused": false
       },
       {
@@ -879,7 +879,7 @@ This is fixture backtesting, not real-world confusion accuracy. Authored windows
         "score": 0.238,
         "early_score": 0.342,
         "state": "calm",
-        "confidence": 0.9,
+        "confidence": 0.65,
         "ground_truth_confused": false
       }
     ]

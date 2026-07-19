@@ -119,6 +119,10 @@ Across nine authored fixtures, confirmed alerts reach **0.875 precision** and **
 
 See [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md) for per-fixture timelines and machine-readable detail. This is fixture behavior validation, not accuracy against real classroom confusion labels.
 
+### Confidence calibration
+
+Run `py scripts/calibrate_ccs_confidence.py` to bucket warning/confirmed events by displayed confidence and compare each bucket with empirical authored-window precision. The formula now rewards distinct signal types, student breadth, and confirmed state rather than repeated raw evidence counts. The current nine-fixture check has a **0.242 weighted absolute gap** and non-monotonic buckets, so confidence is **still uncalibrated**. It is an evidence-quality heuristic, not a probability that an alert is correct. See [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
+
 ## Simulated versus real
 
 | Component | Status |
@@ -157,7 +161,7 @@ Source: [SumnerLab/TalkMoves](https://github.com/SumnerLab/TalkMoves). Dataset p
 
 - Fixtures replace real audio and platform integrations.
 - Live typed messages have no trustworthy response-latency value, so their latency contribution is zero; language and subsequent poll signals still apply normally.
-- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against nine diverse authored fixtures, but it is not trained on deployment data; expanded-set confirmed recall is only 0.269.
+- Initial CCS weights and BKT parameters are expert defaults. CCS has been backtested against nine diverse authored fixtures, but it is not trained on deployment data; expanded-set confirmed recall is only 0.269 and displayed confidence remains uncalibrated.
 - CCS observes language, latency, and polls, not tone, facial expression, or silence quality.
 - Mastery is an estimate based on current evidence, never a diagnosis or fixed student trait.
 - SQLite persistence is local to this demo instance and has no authentication, roster reconciliation, or school data-retention policy.

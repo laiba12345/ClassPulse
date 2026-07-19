@@ -104,10 +104,11 @@ class CCSEngine:
             "poll_responses": len(window.poll_events) or len(window.poll_correct), "student_quotes": window.student_quotes[-3:],
             "unique_students_signaling": len(set(student_ids)), "active_students": window.active_students,
         }
-        evidence_points = len(window.sentiments) + len(window.poll_correct) + len(window.response_latencies)
+        distinct_signals = sum(signal > 0 for signal in (sentiment, keyword, latency, poll_miss))
+        confidence = min(.92, .45 + .08 * distinct_signals + .12 * breadth + (.08 if state == "confirmed" else 0))
         return CCSResult(
             round(value, 3), round(early_value, 3), state, self.warning_threshold, self.confirmed_threshold,
             round(sentiment, 3), round(keyword, 3), round(latency, 3), round(poll_miss, 3),
-            evidence, round(min(.96, .5 + evidence_points * .05), 2),
+            evidence, round(confidence, 2),
             "CCS estimates confusion from observed language, latency, and polls; silence and non-verbal cues are not captured.",
         )

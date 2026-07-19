@@ -56,6 +56,10 @@ The separate poll-independent early-warning path produced:
 
 The pre-poll calculation uses the score from the prior event, so the poll result cannot leak into its own prediction. The early score excludes poll outcomes, while confirmed CCS retains them. Evidence is time-decayed and student breadth is normalized against the active roster. Because this remains a tiny authored set used during development, the result may be overfit and must be replicated on held-out educator labels. Full timelines are in [validation/CCS_BACKTEST.md](./validation/CCS_BACKTEST.md).
 
+## CCS confidence calibration
+
+Twenty warning/confirmed event points were grouped by displayed confidence. Replacing raw evidence counts with distinct signal types, student breadth, and confirmation state prevents repeated events from mechanically inflating confidence, but the resulting bucket table remains non-monotonic with a **0.242 weighted absolute gap**. Confidence is therefore reported as an uncalibrated evidence-quality heuristic, not an alert-correctness probability. Details are in [validation/CCS_CONFIDENCE_CALIBRATION.md](./validation/CCS_CONFIDENCE_CALIBRATION.md).
+
 ## Real-server smoke test
 
 Uvicorn was launched on a real localhost socket and verified independently of FastAPI’s in-process test client:
