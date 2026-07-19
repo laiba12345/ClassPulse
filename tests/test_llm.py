@@ -28,9 +28,10 @@ def test_nudge_call_also_uses_strict_structured_outputs():
         def __init__(self): self.kwargs = None
         def create(self, **kwargs):
             self.kwargs = kwargs
-            return type("R", (), {"output_text": json.dumps({"concept":"fractions","trigger_reason":"3 confused lines","suggested_reframing":"Draw fraction bars."})})()
+            return type("R", (), {"output_text": json.dumps({"concept":"fractions","trigger_reason":"3 confused lines","suggested_reframing":"Draw fraction bars.","strategy":"visual_model","selection_mode":"exploration","strategy_selection_reason":"Neutral exploration."})})()
     responses = FakeResponses(); client = type("C", (), {"responses": responses})()
     result = OpenAIStructuredProvider(client=client).generate_nudge("fractions", {"confused_lines":3})
     assert result.concept == "fractions"
     assert responses.kwargs["text"]["format"]["strict"] is True
     assert responses.kwargs["text"]["format"]["schema"] == NUDGE_SCHEMA
+    assert result.strategy == "visual_model"

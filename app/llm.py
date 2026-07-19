@@ -21,8 +21,8 @@ SENTIMENT_SCHEMA = {
 }
 NUDGE_SCHEMA = {
     "type": "object", "additionalProperties": False,
-    "properties": {"concept": {"type": "string"}, "trigger_reason": {"type": "string"}, "suggested_reframing": {"type": "string"}},
-    "required": ["concept", "trigger_reason", "suggested_reframing"],
+    "properties": {"concept": {"type": "string"}, "trigger_reason": {"type": "string"}, "suggested_reframing": {"type": "string"}, "strategy": {"type": "string", "enum": ["visual_model", "worked_example", "contrast_case", "analogy", "student_explanation"]}, "selection_mode": {"type": "string", "enum": ["exploration", "evidence_informed"]}, "strategy_selection_reason": {"type": "string"}},
+    "required": ["concept", "trigger_reason", "suggested_reframing", "strategy", "selection_mode", "strategy_selection_reason"],
 }
 EXPLANATION_RISK_SCHEMA = {
     "type": "object", "additionalProperties": False,
@@ -50,6 +50,9 @@ class NudgeResult(BaseModel):
     concept: str
     trigger_reason: str
     suggested_reframing: str
+    strategy: Literal["visual_model", "worked_example", "contrast_case", "analogy", "student_explanation"]
+    selection_mode: Literal["exploration", "evidence_informed"]
+    strategy_selection_reason: str
 
 
 class ExplanationRiskResult(BaseModel):
@@ -66,7 +69,7 @@ class StructuredProvider(ABC):
     @abstractmethod
     def classify_sentiment(self, text: str) -> SentimentResult: ...
     @abstractmethod
-    def generate_nudge(self, concept: str, evidence: dict) -> NudgeResult: ...
+    def generate_nudge(self, concept: str, evidence: dict, strategy: str = "visual_model", selection_mode: str = "exploration", strategy_selection_reason: str = "Neutral exploration.") -> NudgeResult: ...
     @abstractmethod
     def analyze_explanation(self, concept: str, text: str) -> ExplanationRiskResult: ...
 
@@ -90,8 +93,8 @@ class OpenAIStructuredProvider(StructuredProvider):
         payload = self._request("Classify the student's expressed learning state. Identify uncertainty, clarification or verification questions, and explicit misconceptions. Probability must reflect confusion rather than general negative sentiment. Return the strict schema.", text, "classroom_sentiment", SENTIMENT_SCHEMA)
         return SentimentResult.model_validate(payload)
 
-    def generate_nudge(self, concept: str, evidence: dict) -> NudgeResult:
-        prompt = f"Concept: {concept}\nObserved signals: {json.dumps(evidence)}\nDraft one short, concrete re-explanation. Cite signal counts; do not diagnose students."
+    def generate_nudge(self, concept: str, evidence: dict, strategy: str = "visual_model", selection_mode: str = "exploration", strategy_selection_reason: str = "Neutral exploration.") -> NudgeResult:
+        prompt = f"Concept: {concept}\nRequired intervention strategy: {strategy}\nSelection mode: {selection_mode}\nSelection reason: {strategy_selection_reason}\nObserved signals: {json.dumps(evidence)}\nDraft one short, concrete strategy-specific re-explanation. Preserve the supplied strategy metadata exactly. Cite signal counts; do not diagnose students."
         payload = self._request("You are a real-time teacher copilot. Return only the strict schema.", prompt, "teacher_nudge", NUDGE_SCHEMA)
         return NudgeResult.model_validate(payload)
 
@@ -113,14 +116,14 @@ class DemoStructuredProvider(StructuredProvider):
         tentative = any(term in lowered for term in ("maybe", "i think", "is it", "would it", "opposite"))
         return SentimentResult(sentiment="confused" if tentative else "neutral", confidence=.65 if tentative else .72, confusion_probability=.58 if tentative else .15, misconception="", question_type="verification" if tentative else "none", evidence_strength=.6)
 
-    def generate_nudge(self, concept: str, evidence: dict) -> NudgeResult:
+    def generate_nudge(self, concept: str, evidence: dict, strategy: str = "visual_model", selection_mode: str = "exploration", strategy_selection_reason: str = "Neutral exploration.") -> NudgeResult:
         frames = {
             "fractions": "Draw equal-sized fraction bars for 1/4 and 1/8, then ask students what happens to piece size as the denominator grows.",
             "photosynthesis": "Trace a carbon atom from CO₂ into glucose with an input-output diagram; distinguish soil minerals from plant-made food.",
             "forces": "Use a low-friction puck and force arrows to separate constant velocity from acceleration.",
         }
         reason = f"{evidence.get('confused_lines', 0)} confused-language lines, {evidence.get('poll_misses', 0)} poll misses, and {evidence.get('average_latency_seconds', 0)}s average latency."
-        return NudgeResult(concept=concept, trigger_reason=reason, suggested_reframing=frames.get(concept, f"Ask students to represent {concept} in a different way and explain what changed."))
+        return NudgeResult(concept=concept, trigger_reason=reason, suggested_reframing=frames.get(concept, f"Ask students to represent {concept} in a different way and explain what changed."), strategy=strategy, selection_mode=selection_mode, strategy_selection_reason=strategy_selection_reason)
 
     def analyze_explanation(self, concept: str, text: str) -> ExplanationRiskResult:
         lowered = text.lower()

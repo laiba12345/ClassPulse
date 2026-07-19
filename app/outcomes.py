@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from uuid import uuid4
 
+INTERVENTION_STRATEGIES = ("visual_model", "worked_example", "contrast_case", "analogy", "student_explanation")
+
 
 @dataclass
 class NudgeOutcome:
@@ -12,6 +14,7 @@ class NudgeOutcome:
     concept: str
     trigger_at: float
     baseline_correctness: float | None
+    strategy: str = "visual_model"
     decision: str = "pending"
     decided_at: float | None = None
     next_poll_at: float | None = None
@@ -35,8 +38,10 @@ class OutcomeTracker:
     def __init__(self):
         self.records: dict[str, NudgeOutcome] = {}
 
-    def register(self, concept: str, trigger_at: float, baseline_correctness: float | None) -> NudgeOutcome:
-        record = NudgeOutcome(uuid4().hex[:12], concept, trigger_at, baseline_correctness)
+    def register(self, concept: str, trigger_at: float, baseline_correctness: float | None, strategy: str = "visual_model") -> NudgeOutcome:
+        if strategy not in INTERVENTION_STRATEGIES:
+            raise ValueError(f"unknown intervention strategy: {strategy}")
+        record = NudgeOutcome(uuid4().hex[:12], concept, trigger_at, baseline_correctness, strategy)
         self.records[record.nudge_id] = record
         return record
 
@@ -59,3 +64,26 @@ class OutcomeTracker:
 
     def snapshot(self) -> list[dict]:
         return [record.as_dict() for record in self.records.values()]
+
+    def strategy_evidence(self, concept: str) -> dict[str, dict]:
+        result = {}
+        for strategy in INTERVENTION_STRATEGIES:
+            valid = [record for record in self.records.values() if record.concept == concept and record.strategy == strategy and record.applied and record.correctness_delta is not None]
+            deltas = [record.correctness_delta for record in valid]
+            result[strategy] = {
+                "attempts": len(deltas), "observed_deltas": deltas,
+                "mean_observed_delta": round(sum(deltas) / len(deltas), 3) if deltas else None,
+            }
+        return result
+
+    def select_strategy(self, concept: str) -> tuple[str, str, str]:
+        evidence = self.strategy_evidence(concept)
+        positive = [(details["mean_observed_delta"], strategy) for strategy, details in evidence.items() if details["attempts"] and details["mean_observed_delta"] > 0]
+        if positive:
+            delta, strategy = max(positive, key=lambda item: (item[0], -INTERVENTION_STRATEGIES.index(item[1])))
+            attempts = evidence[strategy]["attempts"]
+            qualifier = "one observed outcome" if attempts == 1 else f"{attempts} observed outcomes"
+            return strategy, "evidence_informed", f"Selected using {qualifier} in this session (mean next-poll delta {delta:+.3f}); this is observational, not causal."
+        attempted = {strategy: details["attempts"] for strategy, details in evidence.items()}
+        strategy = min(INTERVENTION_STRATEGIES, key=lambda item: (attempted[item], INTERVENTION_STRATEGIES.index(item)))
+        return strategy, "exploration", "Neutral exploration: no positive completed within-session evidence distinguishes the strategies yet."

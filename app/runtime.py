@@ -19,7 +19,8 @@ logger = logging.getLogger("classpulse.runtime")
 class ClassRuntime:
     def __init__(self, lesson: ScriptedClass, provider: StructuredProvider, memory=None, session_id: str | None = None, live_mode: bool = False):
         self.lesson, self.provider = lesson, provider
-        self.ccs, self.bkt, self.nudges = CCSEngine(), BKTTracker(memory=memory), NudgeEngine(provider)
+        self.outcomes = OutcomeTracker()
+        self.ccs, self.bkt, self.nudges = CCSEngine(), BKTTracker(memory=memory), NudgeEngine(provider, outcomes=self.outcomes)
         self.sentiments = deque(maxlen=5); self.latencies = deque(maxlen=5); self.quotes = deque(maxlen=5)
         self.sentiment_events = deque(maxlen=20); self.keyword_events = deque(maxlen=20)
         self.latency_events = deque(maxlen=20); self.poll_events = deque(maxlen=40)
@@ -32,7 +33,6 @@ class ClassRuntime:
         self.completed = False
         self.session_id = session_id or lesson.id
         self.current_ccs = 0.0
-        self.outcomes = OutcomeTracker()
         self.last_poll_correctness: float | None = None
         self.status = "created"
         self.live_mode = live_mode
@@ -138,7 +138,7 @@ class ClassRuntime:
             yield {"kind": "mastery", "data": {"students": self.bkt.snapshot(self.lesson.concept, self.lesson.students), "session_id": self.session_id}}
         nudge = self.nudges.consider(self.lesson.concept, result.score, result.evidence)
         if nudge:
-            outcome = self.outcomes.register(self.lesson.concept, self.current_at, self.last_poll_correctness)
+            outcome = self.outcomes.register(self.lesson.concept, self.current_at, self.last_poll_correctness, strategy=nudge.strategy)
             yield {"kind": "nudge", "data": {**nudge.model_dump(), "nudge_id": outcome.nudge_id, "confidence": result.confidence, "evidence": result.evidence, "limitations": result.limitations, "llm_mode": self.provider.mode, "session_id": self.session_id}}
 
     async def _produce_replay(self, speed: float) -> None:

@@ -19,6 +19,10 @@ async function decideNudge(nudgeId, decision, button) {
 
 function addNudgeControls(data) {
   const panel = document.querySelector('#nudgePanel');
+  const strategy = document.createElement('p');
+  strategy.className = 'strategy-evidence';
+  strategy.innerHTML = `<strong>${escapeHtml(data.strategy.replaceAll('_', ' '))}</strong> · ${escapeHtml(data.selection_mode.replaceAll('_', ' '))}<br><small>${escapeHtml(data.strategy_selection_reason)}</small>`;
+  panel.append(strategy);
   const controls = document.createElement('div');
   controls.className = 'nudge-actions';
   controls.innerHTML = '<button data-decision="applied">Applied</button><button class="dismiss" data-decision="dismissed">Dismissed</button>';
