@@ -362,6 +362,8 @@ local databases, protected ClassBank downloads, and development artifacts.
 
 ## How I collaborated with Codex
 
+We used Codex as an iterative engineering collaborator throughout the project. We provided the product requirements and required functionalities, reviewed each implementation, tested the live experience, and identified problems. Codex helped implement and test tasks such as OpenAI integrations, confusion metrics, live transcription, persistent learning records, and more. We made the final product, scope, naming, and deployment decisions, and rejected behavior that did not match the intended educational model. Along the way, we suggested improvements and continuously changed the requirements, and Codex was consistently strong at understanding and implementing every newly added task.
+
 I used Codex as an implementation and evaluation partner, not as the source of the product idea, the project name, or the final authority on educational claims. I supplied the Nalmai name and goal, the staged task briefs, scope constraints, technology choices, and acceptance criteria. Codex inspected those instructions, implemented each bounded task, ran the application and tests, surfaced failures, and committed completed tasks separately so I could review the progression.
 
 ### Prompts and task briefs I used
@@ -447,3 +449,7 @@ The Codex `/feedback` session ID for this collaboration is:
 ```
 
 This ID identifies the Codex thread used for the implementation and evaluation collaboration described above.
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE). The bundled TalkMoves data under `data/real/talkmoves/` is licensed separately under **CC BY-NC-SA 4.0** by its original authors and remains subject to that license's attribution, noncommercial, and share-alike terms regardless of the MIT license on the code (see [`data/real/talkmoves/DATASET.md`](./data/real/talkmoves/DATASET.md)).
