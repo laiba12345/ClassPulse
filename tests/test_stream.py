@@ -25,3 +25,11 @@ def test_expanded_catalog_has_nine_valid_diverse_fixtures():
         assert len(lesson.events) >= 4
         assert [event["at"] for event in lesson.events] == sorted(event["at"] for event in lesson.events)
         assert all(event["speaker"] in lesson.students for event in lesson.events if event["type"] == "chat")
+
+
+def test_extended_presentation_fixture_has_full_intervention_story():
+    lesson = ScriptedClass.load("ahaloop_extended")
+    assert lesson.id == "ahaloop-extended"
+    assert lesson.events[-1]["at"] >= 60
+    assert sum(event["type"] == "poll" for event in lesson.events) >= 2
+    assert any(event["type"] == "teacher" and "fraction bar" in event["text"].lower() for event in lesson.events)

@@ -4,7 +4,7 @@ AhaLoop is a real-time teaching copilot that detects confusion, recommends an ev
 
 > Naming note: AhaLoop was formerly developed under the name **ClassPulse**. Internal compatibility identifiers may retain the former lowercase name so existing data and environment configuration continue to work.
 
-This repository follows `AGENTS.md` and implements Tasks 1–9 in `TASK_BRIEFS.md`. The broader earlier ClassroomOS simulator is intentionally not part of this scoped build.
+This repository follows `AGENTS.md` and the staged tasks in `TASK_BRIEFS.md`.
 
 ## One-command demo
 
@@ -28,19 +28,21 @@ py -m pip install -r requirements.txt
 
 ## What happens live
 
-1. One of three curated demo fixtures replays teacher speech, student chat, and polls using original relative timestamps.
+1. A curated lesson replays teacher speech, student chat, and polls using original relative timestamps; the extended presentation fixture runs a complete intervention story over 72 lesson-seconds.
 2. Every transcript line passes through the typed sentiment-provider boundary.
 3. CCS combines structured learning-state classification, keyword flags, response latency, unique-student breadth, and poll-miss rate with deterministic weighted sigmoids. Evidence decays with age instead of accumulating forever.
-4. Explicit poll correctness updates BKT strongly. CCS contributes lower-weight soft evidence.
+4. Explicit poll correctness updates BKT strongly. A student's own confused language can provide lower-weight soft evidence only for that student; class-wide CCS does not change individual mastery.
 5. A language-only early warning appears at `0.40`; when confirmed CCS first crosses `0.60`, the nudge engine calls GPT‑5.6 with strict Structured Outputs. It does not fire again until the score falls below the reset threshold.
 6. The single dashboard updates through Server-Sent Events without refresh: transcript, CCS gauge/components, nudge, and mastery table.
 7. BKT state is persisted to SQLite after every update. A restarted session begins from the previous ending mastery and shows the change since that prior session.
 8. An optional “Live student” drawer accepts non-scripted chat during replay. Those events enter the same runtime queue and processing function as fixture events and are visibly tagged.
 9. Every replay has its own session ID and isolated CCS, BKT, queue, and nudge state. The active-classes strip exposes simultaneous sessions without mixing their events.
+10. After a nudge, GPT-5.6 checks subsequent teacher speech for observable implementation evidence. The dashboard shows status, confidence, and a supporting transcript quote; the teacher can confirm or correct it.
+11. The next poll is tracked separately as an observed outcome, preserving the distinction between “the strategy was implemented” and “student performance changed afterward.”
 
 ## GPT‑5.6 configuration
 
-Put `OPENAI_API_KEY` in the repository's `.env` file before launching. The file is loaded automatically and ignored by Git. With a key, `CLASSPULSE_LLM_MODE=auto` selects the real Responses API adapter using model `gpt-5.6` and strict JSON schemas for both sentiment and nudge calls.
+Put `OPENAI_API_KEY` in the repository's `.env` file before launching. The file is loaded automatically and ignored by Git. With a key, `CLASSPULSE_LLM_MODE=auto` selects the real Responses API adapter using model `gpt-5.6` and strict JSON schemas for student learning state, explanation risk, nudge generation, and implementation verification.
 
 ```powershell
 $env:OPENAI_API_KEY = "your-key"
@@ -319,7 +321,7 @@ I retained responsibility for the product and evidence decisions:
 
 ### Tests and evaluation Codex helped construct
 
-Codex helped build the current 83-test suite, including:
+Codex helped build the current 91-test suite, including:
 
 - Fixture schema, event ordering, original timestamps, and asynchronous replay.
 - Calm, confused, bounded, early-warning, breadth, and time-decay CCS behavior.

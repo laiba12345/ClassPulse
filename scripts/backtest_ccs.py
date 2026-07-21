@@ -83,7 +83,11 @@ def backtest_fixture(name: str) -> dict:
 
 def backtest_all() -> list[dict]:
     paths = list(DATA_DIR.glob("*.json")) + list(VALIDATION_DATA_DIR.glob("*.json"))
-    return [backtest_fixture(path.stem) for path in sorted(paths, key=lambda item: item.stem)]
+    benchmark_paths = [
+        path for path in paths
+        if not json.loads(path.read_text(encoding="utf-8")).get("validation", {}).get("exclude_from_ccs_backtest", False)
+    ]
+    return [backtest_fixture(path.stem) for path in sorted(benchmark_paths, key=lambda item: item.stem)]
 
 
 def write_report(results: list[dict], output: Path = DEFAULT_REPORT) -> Path:

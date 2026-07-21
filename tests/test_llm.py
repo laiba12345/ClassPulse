@@ -1,5 +1,5 @@
 import json
-from app.llm import DemoStructuredProvider, OpenAIStructuredProvider, SENTIMENT_SCHEMA, NUDGE_SCHEMA
+from app.llm import DemoStructuredProvider, OpenAIStructuredProvider, SENTIMENT_SCHEMA, NUDGE_SCHEMA, IMPLEMENTATION_SCHEMA
 
 def test_demo_provider_obeys_sentiment_contract():
     result = DemoStructuredProvider().classify_sentiment("I am confused and not sure")
@@ -35,3 +35,35 @@ def test_nudge_call_also_uses_strict_structured_outputs():
     assert responses.kwargs["text"]["format"]["strict"] is True
     assert responses.kwargs["text"]["format"]["schema"] == NUDGE_SCHEMA
     assert result.strategy == "visual_model"
+
+def test_nudge_implementation_verification_uses_strict_schema():
+    class FakeResponses:
+        def __init__(self): self.kwargs = None
+        def create(self, **kwargs):
+            self.kwargs = kwargs
+            return type("R", (), {"output_text": json.dumps({
+                "status":"implemented", "confidence":.91,
+                "evidence_quote":"Compare these equal-sized fraction bars.",
+                "rationale":"The teacher used the recommended visual comparison."
+            })})()
+    responses = FakeResponses(); client = type("C", (), {"responses": responses})()
+    result = OpenAIStructuredProvider(client=client).verify_nudge_implementation(
+        "fractions", "Draw equal-sized fraction bars.", "visual_model",
+        "Compare these equal-sized fraction bars."
+    )
+    assert result.status == "implemented"
+    assert responses.kwargs["text"]["format"]["strict"] is True
+    assert responses.kwargs["text"]["format"]["schema"] == IMPLEMENTATION_SCHEMA
+
+def test_demo_verifier_requires_strategy_evidence_in_teacher_speech():
+    provider = DemoStructuredProvider()
+    implemented = provider.verify_nudge_implementation(
+        "fractions", "Draw equal-sized fraction bars.", "visual_model",
+        "Let us draw two equal-sized fraction bars and compare the pieces."
+    )
+    unrelated = provider.verify_nudge_implementation(
+        "fractions", "Draw equal-sized fraction bars.", "visual_model",
+        "Please copy the next question."
+    )
+    assert implemented.status == "implemented"
+    assert unrelated.status == "not_implemented"

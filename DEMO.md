@@ -38,19 +38,23 @@ When the nudge appears, point to its strategy and evidence.
 
 > Once corroborated confusion crosses the threshold, GPT-5.6 drafts one short, strategy-specific re-explanation. Here it recommends a visual model instead of simply repeating the rule.
 
-Click **Applied**.
+Do not click either decision button yet. Wait for the next teacher segment.
 
-> The teacher remains in control. AhaLoop records whether the suggestion was applied or dismissed; showing a nudge is not treated as success.
+> Showing a nudge is not treated as success. AhaLoop checks subsequent teacher speech for observable evidence that the recommended strategy was actually used.
+
+When **Implementation: implemented** appears, point to its evidence quote and confidence:
+
+> GPT-5.6 found the recommended fraction-bar strategy in the teacher's later explanation. The teacher can confirm or correct this judgment, so the model is not the final authority.
 
 ## 2:05–2:35 — Observe the outcome
 
 When the final poll arrives, scroll to **Observed outcomes** if necessary.
 
-> AhaLoop links the applied teaching move to the next poll. Understanding rises from the earlier poll to the follow-up check. This is observational session evidence—not a causal claim—but it gives the system evidence about which strategy to try next.
+> AhaLoop separately links the verified teaching move to the next poll. Understanding rises from the earlier poll to the follow-up check. Implementation evidence answers “did the teacher do it?”; the poll answers “what happened next?” This remains observational evidence, not a causal claim.
 
 ## 2:35–2:55 — Why it is credible
 
-> The application has 83 automated tests, held-out annotation and blinded educator-evaluation workflows, and language ingestion validated against more than 30,000 TalkMoves utterance pairs. CCS and Bayesian Knowledge Tracing are deterministic; GPT-5.6 is used where language reasoning and generation are needed.
+> The application has 91 automated tests, held-out annotation and blinded educator-evaluation workflows, and language ingestion validated against more than 30,000 TalkMoves utterance pairs. CCS and Bayesian Knowledge Tracing are deterministic; GPT-5.6 is used where language reasoning and generation are needed.
 
 ## 2:55–3:00 — Finish
 

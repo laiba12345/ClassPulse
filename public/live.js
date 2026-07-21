@@ -12,7 +12,8 @@ window.advanceDemo = function(step) {
     1: 'The lesson is live. Point to the transcript and the GPT-5.6 badge.',
     2: 'Student signals agree. Point to the CCS evidence—not just the score.',
     3: 'A concrete teaching move is ready. Click “Applied” to close the loop.',
-    4: 'The next poll improved. Show the observed outcome and finish the story.'
+    4: 'AhaLoop found evidence in later teacher speech that the move was implemented.',
+    5: 'The next poll improved. Show the observed outcome and finish the story.'
   };
   document.querySelector('#demoPrompt').textContent = prompts[step];
 };
@@ -20,7 +21,7 @@ window.advanceDemo = function(step) {
 async function startPresentation() {
   presentationActive = true;
   document.body.classList.add('presentation-mode');
-  document.querySelector('#lessonSelect').value = 'fractions-live';
+  document.querySelector('#lessonSelect').value = 'ahaloop-extended';
   document.querySelector('#speedSelect').value = '1';
   window.scrollTo({top:0, behavior:'smooth'});
   window.advanceDemo(1);
@@ -75,7 +76,7 @@ function addNudgeControls(data) {
   panel.append(strategy);
   const controls = document.createElement('div');
   controls.className = 'nudge-actions';
-  controls.innerHTML = '<button data-decision="applied">Applied</button><button class="dismiss" data-decision="dismissed">Dismissed</button>';
+  controls.innerHTML = '<button data-decision="applied">Confirm applied</button><button class="dismiss" data-decision="dismissed">Correct: not applied</button>';
   controls.querySelectorAll('button').forEach(button => button.onclick = () => decideNudge(data.nudge_id, button.dataset.decision, button).catch(error => toast(error.message)));
   panel.append(controls);
 }
@@ -88,9 +89,23 @@ async function loadOutcomes() {
   document.querySelector('#outcomeTable tbody').innerHTML = records.length ? records.map(record => {
     const percent = value => value == null ? '—' : `${Math.round(value * 100)}%`;
     const delta = record.correctness_delta == null ? 'Awaiting next poll' : `${record.correctness_delta >= 0 ? '+' : ''}${Math.round(record.correctness_delta * 100)} pts`;
-    return `<tr><td>${escapeHtml(record.nudge_id)}</td><td>${escapeHtml(record.decision)}</td><td>${percent(record.baseline_correctness)}</td><td>${percent(record.next_poll_correctness)}</td><td>${delta}</td></tr>`;
-  }).join('') : '<tr><td colspan="5" class="waiting">No nudges recorded yet.</td></tr>';
-  if (records.some(record => record.correctness_delta != null)) window.advanceDemo(4);
+    const implementation = record.implementation_status === 'not_checked' ? 'Awaiting teacher speech' : `${record.implementation_status.replaceAll('_',' ')}${record.implementation_confidence == null ? '' : ` · ${Math.round(record.implementation_confidence * 100)}%`}`;
+    return `<tr><td>${escapeHtml(record.nudge_id)}</td><td>${escapeHtml(implementation)}</td><td>${escapeHtml(record.decision)}</td><td>${percent(record.baseline_correctness)}</td><td>${percent(record.next_poll_correctness)}</td><td>${delta}</td></tr>`;
+  }).join('') : '<tr><td colspan="6" class="waiting">No nudges recorded yet.</td></tr>';
+  if (records.some(record => record.correctness_delta != null)) window.advanceDemo(5);
+}
+
+function renderImplementationVerification(data) {
+  const panel = document.querySelector('#nudgePanel');
+  panel.querySelector('.implementation-verification')?.remove();
+  const result = document.createElement('div');
+  result.className = `implementation-verification ${data.implementation_status}`;
+  const confidence = data.implementation_confidence == null ? '' : ` · ${Math.round(data.implementation_confidence * 100)}% confidence`;
+  const evidence = data.implementation_evidence ? `<br><small>Evidence: “${escapeHtml(data.implementation_evidence)}”</small>` : '';
+  result.innerHTML = `<strong>Implementation: ${escapeHtml(data.implementation_status.replaceAll('_',' '))}${confidence}</strong>${evidence}<br><small>${escapeHtml(data.implementation_rationale)}</small>`;
+  panel.append(result);
+  if (data.implementation_status === 'implemented') window.advanceDemo(4);
+  loadOutcomes();
 }
 
 async function uploadAudio(blob, offset) {
@@ -170,6 +185,7 @@ connectSession = function(sessionId) {
   originalConnectSession(sessionId);
   state.source.addEventListener('explanation_risk', event => renderExplanationRisk(JSON.parse(event.data)));
   state.source.addEventListener('nudge', event => addNudgeControls(JSON.parse(event.data)));
+  state.source.addEventListener('implementation_verification', event => renderImplementationVerification(JSON.parse(event.data)));
   state.source.addEventListener('event', event => {
     const data = JSON.parse(event.data);
     if (data.source === 'live_audio') document.querySelector('.turn:last-child .live-badge').textContent = 'LIVE AUDIO';

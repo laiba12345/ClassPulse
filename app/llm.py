@@ -35,6 +35,16 @@ EXPLANATION_RISK_SCHEMA = {
     },
     "required": ["concept", "factual_risk", "clarity_risk", "possible_issue", "evidence", "suggested_check"],
 }
+IMPLEMENTATION_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "properties": {
+        "status": {"type": "string", "enum": ["implemented", "partially_implemented", "not_implemented", "uncertain"]},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence_quote": {"type": "string"},
+        "rationale": {"type": "string"},
+    },
+    "required": ["status", "confidence", "evidence_quote", "rationale"],
+}
 
 
 class SentimentResult(BaseModel):
@@ -64,6 +74,13 @@ class ExplanationRiskResult(BaseModel):
     suggested_check: str
 
 
+class ImplementationVerificationResult(BaseModel):
+    status: Literal["implemented", "partially_implemented", "not_implemented", "uncertain"]
+    confidence: float = Field(ge=0, le=1)
+    evidence_quote: str
+    rationale: str
+
+
 class StructuredProvider(ABC):
     mode: str
     @abstractmethod
@@ -72,6 +89,8 @@ class StructuredProvider(ABC):
     def generate_nudge(self, concept: str, evidence: dict, strategy: str = "visual_model", selection_mode: str = "exploration", strategy_selection_reason: str = "Neutral exploration.") -> NudgeResult: ...
     @abstractmethod
     def analyze_explanation(self, concept: str, text: str) -> ExplanationRiskResult: ...
+    @abstractmethod
+    def verify_nudge_implementation(self, concept: str, suggestion: str, strategy: str, teacher_text: str) -> ImplementationVerificationResult: ...
 
 
 class OpenAIStructuredProvider(StructuredProvider):
@@ -103,6 +122,12 @@ class OpenAIStructuredProvider(StructuredProvider):
         payload = self._request("You are a cautious instructional-quality reviewer. Return the strict schema.", prompt, "teacher_explanation_risk", EXPLANATION_RISK_SCHEMA)
         return ExplanationRiskResult.model_validate(payload)
 
+    def verify_nudge_implementation(self, concept: str, suggestion: str, strategy: str, teacher_text: str) -> ImplementationVerificationResult:
+        prompt = f"Concept: {concept}\nRecommended strategy: {strategy}\nSuggested teaching move: {suggestion}\nSubsequent teacher speech: {teacher_text}"
+        instructions = "Determine whether the subsequent teacher speech demonstrates the suggested teaching move. Require observable strategy evidence; wording need not match. Do not infer implementation from intent or topic overlap. Quote only supplied teacher speech. Return the strict schema."
+        payload = self._request(instructions, prompt, "nudge_implementation_verification", IMPLEMENTATION_SCHEMA)
+        return ImplementationVerificationResult.model_validate(payload)
+
 
 class DemoStructuredProvider(StructuredProvider):
     """Credential-free, explicitly labeled test/demo stand-in for the typed LLM boundary."""
@@ -132,6 +157,24 @@ class DemoStructuredProvider(StructuredProvider):
             concept=concept, factual_risk=.12, clarity_risk=.68 if rule_only else .22,
             possible_issue="A rule may be stated without enough conceptual support." if rule_only else "No specific issue detected from this isolated utterance.",
             evidence=text[:240], suggested_check="Ask a student to explain why the representation supports the rule." if rule_only else "Check understanding with a short student explanation.",
+        )
+
+    def verify_nudge_implementation(self, concept: str, suggestion: str, strategy: str, teacher_text: str) -> ImplementationVerificationResult:
+        lowered = teacher_text.lower()
+        strategy_terms = {
+            "visual_model": ("draw", "diagram", "bar", "model", "number line", "arrow"),
+            "worked_example": ("step", "example", "first", "then"),
+            "contrast_case": ("compare", "contrast", "instead", "difference"),
+            "analogy": ("like", "imagine", "similar"),
+            "student_explanation": ("explain", "tell me why", "your reasoning", "in your own words"),
+        }
+        matches = [term for term in strategy_terms.get(strategy, ()) if term in lowered]
+        implemented = bool(matches)
+        return ImplementationVerificationResult(
+            status="implemented" if implemented else "not_implemented",
+            confidence=.9 if implemented else .76,
+            evidence_quote=teacher_text[:240] if implemented else "",
+            rationale=f"Observed strategy evidence: {', '.join(matches)}." if implemented else "No observable evidence of the recommended strategy appears in this teacher segment.",
         )
 
 

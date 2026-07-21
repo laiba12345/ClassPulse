@@ -59,3 +59,25 @@ def test_positive_observed_strategy_evidence_informs_next_selection():
     assert strategy == "contrast_case"
     assert mode == "evidence_informed"
     assert "one observed" in reason.lower()
+
+
+def test_transcript_verification_is_separate_from_manual_override():
+    tracker = OutcomeTracker()
+    record = tracker.register("fractions", 10, .25, strategy="visual_model", suggestion="Draw equal fraction bars.")
+    tracker.record_implementation(record.nudge_id, "implemented", .91, "equal fraction bars", "Visual model observed", 14)
+    assert record.implementation_status == "implemented"
+    assert record.applied is True
+    assert record.decision == "pending"
+    tracker.decide(record.nudge_id, "dismissed", 15)
+    assert record.applied is False
+    assert record.decision_source == "teacher_override"
+
+
+def test_first_post_nudge_poll_becomes_baseline_when_no_prior_poll_exists():
+    tracker = OutcomeTracker()
+    record = tracker.register("fractions", 10, None)
+    tracker.observe_poll("fractions", 20, .25)
+    tracker.observe_poll("fractions", 30, 1.0)
+    assert record.baseline_correctness == .25
+    assert record.next_poll_correctness == 1.0
+    assert record.correctness_delta == .75

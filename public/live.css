@@ -23,7 +23,7 @@
 .demo-guide-copy { display:flex; flex-direction:column; gap:3px; }
 .demo-guide-copy strong { font:700 12px Manrope; }
 .demo-guide-copy span { color:var(--muted); font-size:8px; line-height:1.45; }
-.demo-guide ol { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; list-style:none; margin:0; padding:0; }
+.demo-guide ol { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; list-style:none; margin:0; padding:0; }
 .demo-guide li { display:flex; align-items:center; gap:7px; min-height:48px; padding:8px; border:1px solid var(--line); border-radius:10px; background:white; color:var(--muted); transition:.25s; }
 .demo-guide li b { width:23px; height:23px; display:grid; place-items:center; flex:none; border-radius:50%; background:var(--paper); font-size:9px; }
 .demo-guide li span { font-size:9px; font-weight:700; }
@@ -32,5 +32,8 @@
 .demo-guide li.active b { background:var(--teal); color:white; }
 .demo-guide li.done b { background:var(--mint); color:var(--teal); }
 .presentation-mode .live-studio,.presentation-mode .active-sessions-strip,.presentation-mode #realDataPanel { display:none; }
+.implementation-verification { margin-top:9px; padding:9px; border-radius:8px; background:var(--mint); color:var(--forest); font-size:8px; line-height:1.5; }
+.implementation-verification.partial,.implementation-verification.uncertain { background:var(--yellow); }
+.implementation-verification.not_implemented { background:var(--peach); }
 @media(max-width:900px) { .live-studio { grid-template-columns:1fr 1fr; } .live-studio video { width:100%; } .live-studio #captureStatus { grid-column:1/-1; } }
 @media(max-width:900px) { .demo-guide { grid-template-columns:1fr; } }

@@ -9,7 +9,7 @@ def test_health_and_lesson_catalog():
     assert health["service"] == "AhaLoop"
     lessons = client.get("/api/classes").json()
     assert len(lessons) >= 3
-    assert {"forces-live", "fractions-live", "photosynthesis-live"}.issubset({lesson["id"] for lesson in lessons})
+    assert {"forces-live", "fractions-live", "photosynthesis-live", "ahaloop-extended"}.issubset({lesson["id"] for lesson in lessons})
 
 def test_sse_stream_has_ordered_live_messages():
     with client.stream("GET", "/api/stream/fractions-live?speed=10000") as response:

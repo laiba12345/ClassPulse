@@ -132,3 +132,45 @@ def test_explanation_and_nudge_failures_emit_degraded_events():
     poll = asyncio.run(_process(runtime, {"id": "poll-1", "at": 2, "type": "poll", "question": "Check", "responses": {"A": False}}))
     assert any(message["kind"] == "model_error" and message["data"]["operation"] == "nudge" for message in poll)
     assert not any(message["kind"] == "nudge" for message in poll)
+
+
+def test_teacher_followup_emits_nudge_implementation_verification():
+    from app.ccs import CCSEngine
+    lesson = ScriptedClass("verify", "Verify", "fractions", ["A"], [])
+    runtime = ClassRuntime(lesson, DemoStructuredProvider())
+    runtime.ccs = CCSEngine(bias=5)
+    poll = asyncio.run(_process(runtime, {"id":"poll-trigger", "at":2, "type":"poll", "question":"Check", "responses":{"A":False}}))
+    nudge = next(message for message in poll if message["kind"] == "nudge")
+    teacher = asyncio.run(_process(runtime, {"id":"teacher-followup", "at":4, "type":"teacher", "speaker":"Teacher", "text":"Let us draw equal-sized fraction bars and compare the pieces."}))
+    verification = next(message for message in teacher if message["kind"] == "implementation_verification")
+    assert verification["data"]["nudge_id"] == nudge["data"]["nudge_id"]
+    assert verification["data"]["implementation_status"] == "implemented"
+    assert runtime.outcomes.get(nudge["data"]["nudge_id"]).applied is True
+
+
+def test_extended_demo_emits_verified_implementation_and_followup_outcome():
+    runtime = ClassRuntime(ScriptedClass.load("ahaloop_extended"), DemoStructuredProvider())
+    messages = asyncio.run(_run(runtime))
+    verification = next(message for message in messages if message["kind"] == "implementation_verification")
+    assert verification["data"]["implementation_status"] == "implemented"
+    outcome = runtime.outcomes.snapshot()[0]
+    assert outcome["baseline_correctness"] == .25
+    assert outcome["next_poll_correctness"] == 1.0
+    assert outcome["correctness_delta"] == .75
+
+
+class BrokenVerificationProvider(DemoStructuredProvider):
+    def verify_nudge_implementation(self, concept, suggestion, strategy, teacher_text):
+        raise RuntimeError("verification unavailable")
+
+
+def test_verification_failure_is_visible_and_does_not_fabricate_implementation():
+    from app.ccs import CCSEngine
+    lesson = ScriptedClass("verify-error", "Verify error", "fractions", ["A"], [])
+    runtime = ClassRuntime(lesson, BrokenVerificationProvider())
+    runtime.ccs = CCSEngine(bias=5)
+    poll = asyncio.run(_process(runtime, {"id":"verify-poll", "at":2, "type":"poll", "question":"Check", "responses":{"A":False}}))
+    nudge = next(message for message in poll if message["kind"] == "nudge")
+    teacher = asyncio.run(_process(runtime, {"id":"verify-teacher", "at":4, "type":"teacher", "speaker":"Teacher", "text":"Draw equal-sized fraction bars."}))
+    assert any(message["kind"] == "model_error" and message["data"]["operation"] == "implementation_verification" for message in teacher)
+    assert runtime.outcomes.get(nudge["data"]["nudge_id"]).implementation_status == "not_checked"

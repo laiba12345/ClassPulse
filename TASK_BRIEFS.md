@@ -689,7 +689,33 @@ UI, package metadata, or documentation until the user explicitly chooses one.
 
 ---
 
-## Stretch tasks (only if Tasks 1-24 are done and fully working with time left)
+## Task 25 — Verify nudge implementation and extend the judged demo
+
+**Goal:** Distinguish displaying a suggestion from observing that the teacher
+actually used it, and give the presenter enough time to demonstrate the full
+closed loop.
+
+**Requirements:**
+- Add a longer curated presentation fixture with baseline confusion, a nudge,
+  subsequent teacher speech that implements the move, and a follow-up poll
+- Verify subsequent teacher speech against the exact suggested strategy using
+  GPT-5.6 Structured Outputs
+- Return an implementation status, confidence, supporting transcript quote,
+  and rationale; never infer success merely because the nudge was displayed
+- Keep teacher confirmation/correction controls because automatic verification
+  is evidence, not final authority
+- Treat implementation verification and next-poll outcome as separate facts
+- Expose the verification in the live event stream, nudge panel, and outcome table
+
+**Definition of done:**
+- The extended fixture emits a nudge, verified implementation, baseline poll,
+  follow-up poll, and observed delta
+- A model failure is visible and does not fabricate implementation
+- Full tests, JavaScript checks, and a real-server presentation smoke test pass
+
+---
+
+## Stretch tasks (only if Tasks 1-25 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT

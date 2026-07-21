@@ -133,6 +133,14 @@ class ClassRuntime:
                 yield {"kind": "model_error", "data": error}
             else:
                 yield {"kind": "explanation_risk", "data": {**risk.model_dump(), "session_id": self.session_id, "at": self.current_at}}
+            pending = self.outcomes.pending_verification(self.lesson.concept, self.current_at)
+            if pending:
+                verification, error = await self._model_call("implementation_verification", self.provider.verify_nudge_implementation, self.lesson.concept, pending.suggestion, pending.strategy, event["text"])
+                if error:
+                    yield {"kind": "model_error", "data": error}
+                else:
+                    record = self.outcomes.record_implementation(pending.nudge_id, verification.status, verification.confidence, verification.evidence_quote, verification.rationale, self.current_at)
+                    yield {"kind": "implementation_verification", "data": {**record.as_dict(), "session_id": self.session_id}}
         if event["type"] == "chat":
             if sentiment is not None:
                 effective_label = "confused" if sentiment.confusion_probability >= .5 else sentiment.sentiment
@@ -166,7 +174,7 @@ class ClassRuntime:
             if error:
                 yield {"kind": "model_error", "data": error}
                 return
-            outcome = self.outcomes.register(self.lesson.concept, self.current_at, self.last_poll_correctness, strategy=nudge.strategy)
+            outcome = self.outcomes.register(self.lesson.concept, self.current_at, self.last_poll_correctness, strategy=nudge.strategy, suggestion=nudge.suggested_reframing)
             yield {"kind": "nudge", "data": {**nudge.model_dump(), "nudge_id": outcome.nudge_id, "evidence_quality": result.evidence_quality, "evidence": result.evidence, "limitations": result.limitations, "llm_mode": self.provider.mode, "session_id": self.session_id}}
 
     async def _produce_replay(self, speed: float) -> None:

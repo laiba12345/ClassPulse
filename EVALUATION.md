@@ -7,9 +7,9 @@ The Python test suite covers:
 - nine fixture files, ordered timestamps, diverse confusion patterns, false-alarm language, and a calm true-negative lesson;
 - clearly confused and clearly calm CCS windows;
 - CCS range guarantees;
-- ten correct BKT updates, repeated incorrect updates, soft CCS evidence, and combined evidence;
+- correct and incorrect BKT updates, student-specific language evidence, and protection against class-wide CCS mastery penalties;
 - SQLite round-trip persistence, timestamped updates, unchanged first-run behavior, restart loading, and prior-session deltas;
-- GPT‑5.6 model selection and strict sentiment/nudge JSON schemas;
+- GPT‑5.6 model selection and strict schemas for sentiment, nudge, explanation risk, and implementation verification;
 - exactly one concept-specific nudge per spike and no calm nudge;
 - complete runtime production of transcript, CCS, mastery, and nudge messages;
 - live student submissions entering the same runtime queue and `process_event` path as scripted events, with SSE/API/UI tagging;
@@ -18,8 +18,10 @@ The Python test suite covers:
 - ClassBank CHAT speaker parsing, millisecond timestamp preservation, media/provenance metadata, and existing-runtime compatibility;
 - FastAPI health/catalog endpoints, SSE delivery, static dashboard delivery;
 - presence of the live transcript, CCS gauge, nudge panel, mastery table, and EventSource client.
+- automatic nudge-implementation verification from subsequent teacher speech, supporting evidence, manual override, visible provider failure, and separate next-poll outcomes;
+- the 72-second extended presentation fixture producing a 25% baseline, verified visual-model implementation, 100% follow-up, and an observational +75-point delta.
 
-The automated suite is rerun after each implementation task. Framework deprecation warnings under Python 3.14 are tracked separately from AhaLoop failures. JavaScript syntax is also checked with Node.
+The current automated suite contains **91 tests** and is rerun after each implementation task. Framework deprecation warnings under Python 3.14 are tracked separately from AhaLoop failures. JavaScript syntax is also checked with Node.
 
 ## Real-data validation
 
