@@ -136,9 +136,10 @@ unrestricted database access.
 ## How I collaborated with Codex
 
 I used Codex throughout the build as an engineering and evaluation partner. I
-defined Nalmai's purpose, selected the name, changed the product requirements as
-the live experience developed, reviewed the results, and made the final scope,
-privacy, and evidence decisions.
+defined Nalmai's purpose and core functionalities beforehand, then kept adding
+new task briefs as the requirements increased and the live experience revealed
+new needs. I selected the name, reviewed each result, and made the final product,
+scope, privacy, and evidence decisions.
 
 Representative prompts and task briefs included:
 
