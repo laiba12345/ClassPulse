@@ -889,7 +889,30 @@ path when diarization labels change between live audio windows.
 
 ---
 
-## Stretch tasks (only if Tasks 1-34 are done and fully working with time left)
+## Task 35 — Use ten-second live transcription windows
+
+**Goal:** Trade slightly higher latency for more complete speech context in each
+live transcription request.
+
+**Definition of done:**
+- Solo and two-person live capture both upload ten-second audio windows
+- The UI and documentation state that processing follows each capture window
+
+---
+
+## Task 36 — Make one-to-one live nudges reachable
+
+**Goal:** Calculate CCS breadth from the connected live student rather than the
+simulated replay roster, so strong evidence can cross the nudge threshold.
+
+**Definition of done:**
+- A one-student live session contains only that student's ID in its CCS roster
+- One strongly confused student turn crosses 0.60 and produces a nudge
+- The full automated suite passes
+
+---
+
+## Stretch tasks (only if Tasks 1-36 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT

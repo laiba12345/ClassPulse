@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from typing import Callable
 from uuid import uuid4
@@ -49,6 +49,8 @@ class SessionRegistry:
             raise ValueError(f"Session already exists: {session_id}")
         if mode not in {"replay", "live"}:
             raise ValueError("mode must be replay or live")
+        if mode == "live" and student_id:
+            lesson = replace(lesson, students=[student_id])
         memory = self.memory_factory()
         runtime = ClassRuntime(lesson, self.provider_factory(), memory=memory, session_id=session_id, live_mode=mode == "live")
         record = SessionRecord(session_id, fixture_id, runtime, datetime.now(timezone.utc).isoformat(), mode,

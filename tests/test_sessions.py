@@ -38,3 +38,20 @@ def test_registry_lists_current_concept_ccs_and_status():
     assert listed[0]["current_ccs"] == 0
     assert listed[0]["status"] == "created"
     assert registry.get(record.session_id) is record
+
+
+def test_one_to_one_live_session_uses_only_the_connected_student_for_ccs_breadth():
+    registry = _registry()
+    record = registry.create(
+        "fractions-live", mode="live", student_id="student-001", student_name="Alex",
+        teacher_id="teacher-001", teacher_name="Ms Taylor",
+    )
+    assert record.runtime.lesson.students == ["student-001"]
+    messages = asyncio.run(_one_confused_turn(record.runtime))
+    assert any(message["kind"] == "ccs" and message["data"]["score"] >= .6 for message in messages)
+    assert any(message["kind"] == "nudge" for message in messages)
+
+
+async def _one_confused_turn(runtime):
+    event = runtime.submit_live_event("student-001", "I am confused and don't understand; this doesn't make sense", "now")
+    return [message async for message in runtime.process_event(event)]
