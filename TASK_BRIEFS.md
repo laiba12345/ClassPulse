@@ -867,7 +867,29 @@ teaching evidence under stable pseudonymous identities.
 
 ---
 
-## Stretch tasks (only if Tasks 1-33 are done and fully working with time left)
+## Task 34 — Guarantee speaker attribution in the two-person call
+
+**Goal:** Prevent teacher speech from entering the student confusion/mastery
+path when diarization labels change between live audio windows.
+
+**Requirements:**
+- Record the teacher local WebRTC track and student remote track separately
+- Keep parallel six-second capture windows and upload both independently
+- Include the known role and stable pseudonymous participant ID with each upload
+- Override model diarization labels only when a trusted per-participant WebRTC
+  track is available; retain diarization for mixed/solo microphone input
+- Document that this doubles transcription requests and that displayed latency
+  is six seconds plus upload and API processing
+
+**Definition of done:**
+- Every teacher-track segment routes to explanation risk and verification
+- Every student-track segment routes to CCS and that student's BKT record
+- Changed or repeated model speaker labels cannot alter the known call role
+- API, runtime, UI, JavaScript, and full-suite tests pass
+
+---
+
+## Stretch tasks (only if Tasks 1-34 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT

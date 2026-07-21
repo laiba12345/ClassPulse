@@ -65,12 +65,15 @@ The implementation follows the official [Responses API](https://developers.opena
 2. Open the dedicated **Live call** tab at `/call`. The teacher clicks **Create as teacher**, shares the
    six-character room code, and the student enters it in a second browser and
    clicks **Join as student**. The room rejects a third participant.
-3. Once both videos appear, the teacher clicks **Start live lecture**. The
-   browser mixes teacher and student call audio into standalone six-second
-   windows uploaded to FastAPI; WebRTC video/audio remains peer-to-peer.
-4. The server calls `gpt-4o-transcribe-diarize` with `diarized_json`. Set the
-   teacher speaker ID (normally `speaker_0`) in the dashboard; all other speaker
-   segments enter the student-signal path.
+3. Once both videos appear, the teacher clicks **Start analysis**. The browser
+   records the teacher's local WebRTC audio track and the student's remote track
+   separately in parallel six-second windows; WebRTC video/audio remains
+   peer-to-peer.
+4. Each track is uploaded with its known role and pseudonymous participant ID.
+   The server calls `gpt-4o-transcribe-diarize` with `diarized_json`, but ignores
+   its speaker labels for the two-person call because the WebRTC track is the
+   stronger identity source. The solo/mixed-microphone dashboard still uses
+   diarization and its configured teacher speaker ID.
 5. Teacher text is checked by GPT-5.6 against the strict explanation-risk
    schema. Student text updates CCS and BKT through the existing runtime.
 6. Subsequent teacher speech is checked for evidence that the nudge was
@@ -99,8 +102,9 @@ restrict media capture on non-secure network origins.
 The API key stays in `.env` on the server. The capture path requires
 `OPENAI_API_KEY`; deterministic demo mode still supports scripted replays but
 cannot transcribe audio. Transcription is near-real-time and chunked, so output
-arrives after each audio window plus API latency. Speaker labels are model
-estimates and the teacher ID may need changing. Outcome deltas are observational
+arrives after each **six-second capture window plus upload and API latency**.
+Separate teacher/student tracks cause two transcription requests per window.
+Speaker labels in the solo/mixed-microphone path remain model estimates. Outcome deltas are observational
 and do not establish that a nudge caused learning.
 
 ## Reliability and evidence boundaries
@@ -416,7 +420,7 @@ I retained responsibility for the product and evidence decisions:
 
 ### Tests and evaluation Codex helped construct
 
-Codex helped build the current 107-test suite, including:
+Codex helped build the current 108-test suite, including:
 
 - Fixture schema, event ordering, original timestamps, and asynchronous replay.
 - Calm, confused, bounded, early-warning, breadth, and time-decay CCS behavior.

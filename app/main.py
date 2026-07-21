@@ -167,6 +167,8 @@ async def session_audio_chunk(
     session_id: str, request: Request, offset_seconds: float = Query(0, ge=0),
     teacher_speaker: str = Query("speaker_0", min_length=1), filename: str = Query("classroom.webm"),
     student_id: str | None = Query(default=None, min_length=1, max_length=80),
+    known_role: str | None = Query(default=None, pattern="^(teacher|student)$"),
+    known_speaker_id: str | None = Query(default=None, min_length=1, max_length=80),
 ):
     record = _session_record(session_id)
     audio = await request.body()
@@ -183,7 +185,8 @@ async def session_audio_chunk(
     except Exception as error:
         raise HTTPException(502, f"Transcription failed: {error}") from error
     events = [
-        record.runtime.submit_transcript_segment(segment, offset_seconds=offset_seconds, teacher_speaker=teacher_speaker, student_id=student_id)
+        record.runtime.submit_transcript_segment(segment, offset_seconds=offset_seconds, teacher_speaker=teacher_speaker,
+            student_id=student_id, known_role=known_role, known_speaker_id=known_speaker_id)
         for segment in segments
     ]
     return {"accepted": True, "model": transcriber.model, "segments": [segment.as_dict() for segment in segments], "events": events}

@@ -1,4 +1,4 @@
-const state = {callLocalStream:null, remoteStream:null, sessionId:null, source:null, capturing:false, mediaStream:null, audioContext:null, chunkOffset:0, generatedPoll:null, studentProfile:null};
+const state = {callLocalStream:null, remoteStream:null, sessionId:null, source:null, capturing:false, analysisTracks:[], windowPromise:null, chunkOffset:0, generatedPoll:null, studentProfile:null};
 const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
 function toast(text) { const element=document.querySelector('#toast'); element.textContent=text; element.classList.add('show'); setTimeout(()=>element.classList.remove('show'),2400); }
 
@@ -69,31 +69,33 @@ function connectAnalysis(sessionId) {
   state.source.addEventListener('model_error',event=>toast(`${JSON.parse(event.data).operation} unavailable`));
 }
 
-function buildAnalysisStream() {
-  const context=new AudioContext(), destination=context.createMediaStreamDestination();
-  context.createMediaStreamSource(state.callLocalStream).connect(destination);
-  if(state.remoteStream?.getAudioTracks().length) context.createMediaStreamSource(state.remoteStream).connect(destination);
-  state.audioContext=context;
-  return new MediaStream(destination.stream.getAudioTracks());
+function buildAnalysisTracks(){
+  const teacherTrack=state.callLocalStream?.getAudioTracks()[0],studentTrack=state.remoteStream?.getAudioTracks()[0];
+  if(!teacherTrack||!studentTrack)throw new Error('Both audio tracks are required');
+  return [
+    {role:'teacher',subjectId:callState.profile.subject_id,stream:new MediaStream([teacherTrack])},
+    {role:'student',subjectId:state.studentProfile.subject_id,stream:new MediaStream([studentTrack])},
+  ];
 }
 
-function recordMeetingWindow() {
-  if(!state.capturing) return;
+function captureTrackWindow(source) {
   const options=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?{mimeType:'audio/webm;codecs=opus'}:{};
-  const recorder=new MediaRecorder(state.mediaStream,options), chunks=[];
-  recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data);};
-  recorder.onstop=async()=>{
-    const offset=state.chunkOffset; state.chunkOffset+=6;
-    try {
-      const blob=new Blob(chunks,{type:recorder.mimeType}), teacher=encodeURIComponent(document.querySelector('#teacherSpeaker').value||'speaker_0');
-      const student=encodeURIComponent(state.studentProfile?.subject_id||'student');
-      const response=await fetch(`/api/sessions/${state.sessionId}/audio-chunks?offset_seconds=${offset}&teacher_speaker=${teacher}&student_id=${student}&filename=call.webm`,{method:'POST',headers:{'content-type':blob.type},body:blob});
-      if(!response.ok) throw new Error((await response.json()).detail||'Transcription failed');
-      document.querySelector('#analysisStatus').textContent='Streaming call audio';
-    } catch(error) { toast(error.message); }
-    if(state.capturing) recordMeetingWindow();
-  };
-  recorder.start(); setTimeout(()=>{if(recorder.state==='recording')recorder.stop();},6000);
+  return new Promise(resolve=>{const recorder=new MediaRecorder(source.stream,options),chunks=[];recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data);};recorder.onstop=()=>resolve({source,blob:new Blob(chunks,{type:recorder.mimeType})});recorder.start();setTimeout(()=>{if(recorder.state==='recording')recorder.stop();},6000);});
+}
+
+async function recordMeetingWindow() {
+  if(!state.capturing)return;
+  const offset=state.chunkOffset;state.chunkOffset+=6;
+  try{
+    const captures=await Promise.all(state.analysisTracks.map(captureTrackWindow));
+    await Promise.all(captures.map(async({source,blob})=>{
+      const role=encodeURIComponent(source.role),speaker=encodeURIComponent(source.subjectId);
+      const response=await fetch(`/api/sessions/${state.sessionId}/audio-chunks?offset_seconds=${offset}&known_role=${role}&known_speaker_id=${speaker}&filename=${role}.webm`,{method:'POST',headers:{'content-type':blob.type},body:blob});
+      if(!response.ok)throw new Error((await response.json()).detail||`${source.role} transcription failed`);
+    }));
+    document.querySelector('#analysisStatus').textContent='Streaming separate teacher + student audio · 6 s windows';
+  }catch(error){toast(error.message);}
+  if(state.capturing)state.windowPromise=recordMeetingWindow();
 }
 
 async function startMeetingAnalysis() {
@@ -102,12 +104,12 @@ async function startMeetingAnalysis() {
   const response=await fetch('/api/sessions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({fixture_id:document.querySelector('#meetingConcept').value,mode:'live',teacher_id:callState.profile.subject_id,teacher_name:callState.profile.display_name,student_id:state.studentProfile.subject_id,student_name:state.studentProfile.display_name})});
   if(!response.ok) throw new Error('Could not start analysis');
   const session=await response.json(); connectAnalysis(session.session_id);
-  state.mediaStream=buildAnalysisStream(); state.capturing=true; state.chunkOffset=0;
-  document.querySelector('#analysisStart').disabled=true;document.querySelector('#analysisStop').disabled=false;document.querySelector('#analysisStatus').textContent='Recording first audio window…';recordMeetingWindow();
+  state.analysisTracks=buildAnalysisTracks(); state.capturing=true; state.chunkOffset=0;
+  document.querySelector('#analysisStart').disabled=true;document.querySelector('#analysisStop').disabled=false;document.querySelector('#analysisStatus').textContent='Recording first audio window…';state.windowPromise=recordMeetingWindow();
 }
 
 async function stopMeetingAnalysis() {
-  state.capturing=false;state.mediaStream?.getTracks().forEach(track=>track.stop());await state.audioContext?.close();
+  state.capturing=false;await state.windowPromise;state.windowPromise=null;state.analysisTracks=[];
   if(state.sessionId) await fetch(`/api/sessions/${state.sessionId}/stop`,{method:'POST'});
   document.querySelector('#analysisStart').disabled=false;document.querySelector('#analysisStop').disabled=true;document.querySelector('#analysisStatus').textContent='Analysis stopped';
   await loadPerformance();

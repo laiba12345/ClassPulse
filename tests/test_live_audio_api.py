@@ -32,6 +32,24 @@ def test_audio_chunk_transcribes_diarizes_and_queues_events(monkeypatch):
     assert body["events"][1]["at"] == 31.6
 
 
+def test_known_call_track_role_overrides_unstable_diarization_labels(monkeypatch):
+    monkeypatch.setattr(main_module, "transcriber", FakeTranscriber())
+    session = client.post("/api/sessions", json={"fixture_id": "fractions-live", "mode": "live"}).json()
+    teacher = client.post(
+        f"/api/sessions/{session['session_id']}/audio-chunks?known_role=teacher&known_speaker_id=teacher-001",
+        content=b"audio-bytes",
+    ).json()
+    student = client.post(
+        f"/api/sessions/{session['session_id']}/audio-chunks?known_role=student&known_speaker_id=student-001",
+        content=b"audio-bytes",
+    ).json()
+
+    assert {event["type"] for event in teacher["events"]} == {"teacher"}
+    assert {event["speaker"] for event in teacher["events"]} == {"teacher-001"}
+    assert {event["type"] for event in student["events"]} == {"chat"}
+    assert {event["speaker"] for event in student["events"]} == {"student-001"}
+
+
 def test_nudge_decision_and_outcome_api():
     session = client.post("/api/sessions", json={"fixture_id": "forces-live"}).json()
     runtime = main_module.session_registry.get(session["session_id"]).runtime

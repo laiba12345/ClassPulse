@@ -54,7 +54,7 @@ When the final poll arrives, scroll to **Observed outcomes** if necessary.
 
 ## 2:35–2:55 — Why it is credible
 
-> The application has 107 automated tests, held-out annotation and blinded educator-evaluation workflows, and language ingestion validated against more than 30,000 TalkMoves utterance pairs. CCS and Bayesian Knowledge Tracing are deterministic; GPT-5.6 is used where language reasoning and generation are needed.
+> The application has 108 automated tests, held-out annotation and blinded educator-evaluation workflows, and language ingestion validated against more than 30,000 TalkMoves utterance pairs. CCS and Bayesian Knowledge Tracing are deterministic; GPT-5.6 is used where language reasoning and generation are needed.
 
 ## 2:55–3:00 — Finish
 
@@ -71,7 +71,7 @@ Use this for a live judge conversation, not the deterministic submitted video:
 3. Enter that code in the second window and click **Join as student**.
 4. Wait until both windows show the remote participant and `2/2 participants`.
 5. Use headphones to prevent speaker echo.
-6. In the teacher window only, click **Start analysis**. Both call audio streams now enter the existing transcription and diarization pipeline. Keep the teacher insight column visible: it shows CCS, mastery, explanation risk, transcript, and GPT-5.6 suggestions during the meeting.
+6. In the teacher window only, click **Start analysis**. The teacher and student WebRTC audio tracks are captured separately in six-second windows and transcribed with their known participant roles, avoiding cross-speaker attribution. Keep the teacher insight column visible: it shows CCS, mastery, explanation risk, transcript, and GPT-5.6 suggestions during the meeting.
 7. Let the teacher explain normally. The student should interrupt naturally with “Wait, I am confused about why a larger denominator makes a smaller piece.”
 8. When the nudge fires, GPT-5.6 automatically creates a baseline check in the student window. Let the student answer, teach the suggested strategy, and let the student answer the automatically generated transfer check.
 9. Use **Leave** in both windows when finished.
