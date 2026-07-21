@@ -16,9 +16,9 @@ Point to the four-step guide and add: “This is not a chatbot. It is a closed i
 
 ## 0:25–0:55 — Live input
 
-Point to the transcript as the fraction lesson begins.
+Point to the transcript as the teacher gives a normal explanation without asking students a question.
 
-> The production input is chunked microphone audio with speech-to-text and speaker diarization. For a reliable three-minute demo, this scenario replays the same typed teacher, student, latency, and poll events at live timestamps.
+> The production input is chunked microphone audio with speech-to-text and speaker diarization. For a reliable three-minute demo, this scenario replays the same typed events at live timestamps. Notice that the teacher has not asked a question—students begin expressing confusion spontaneously while the explanation continues.
 
 Point to the intelligence badge:
 
@@ -26,9 +26,9 @@ Point to the intelligence badge:
 
 ## 0:55–1:25 — Detect confusion
 
-When student messages arrive, point to the CCS panel.
+First point to **Teacher Explanation Risk** when the unsupported rule is detected. Then, as unsolicited student messages arrive before any poll, point to the CCS panel.
 
-> AhaLoop combines student language, confusion keywords, response latency, breadth across learners, and poll misses. The score is deterministic and exposes its evidence. It is a class intervention signal, not a diagnosis or an automatic penalty to every student.
+> AhaLoop first identifies that the explanation may create confusion because a rule was stated without conceptual support. Student language then independently confirms a problem before any formal check. The later poll corroborates the signal; it does not create it. CCS is deterministic and exposes its evidence.
 
 Briefly point to mastery: “Individual mastery changes only from evidence belonging to that learner.”
 

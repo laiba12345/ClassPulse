@@ -28,7 +28,7 @@ py -m pip install -r requirements.txt
 
 ## What happens live
 
-1. A curated lesson replays teacher speech, student chat, and polls using original relative timestamps; the extended presentation fixture runs a complete intervention story over 72 lesson-seconds.
+1. A curated lesson replays teacher speech, unsolicited student chat, and polls using original relative timestamps; the extended presentation fixture detects confusion during an ordinary explanation before any teacher question or poll.
 2. Every transcript line passes through the typed sentiment-provider boundary.
 3. CCS combines structured learning-state classification, keyword flags, response latency, unique-student breadth, and poll-miss rate with deterministic weighted sigmoids. Evidence decays with age instead of accumulating forever.
 4. Explicit poll correctness updates BKT strongly. A student's own confused language can provide lower-weight soft evidence only for that student; class-wide CCS does not change individual mastery.

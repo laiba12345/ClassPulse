@@ -33,3 +33,9 @@ def test_extended_presentation_fixture_has_full_intervention_story():
     assert lesson.events[-1]["at"] >= 60
     assert sum(event["type"] == "poll" for event in lesson.events) >= 2
     assert any(event["type"] == "teacher" and "fraction bar" in event["text"].lower() for event in lesson.events)
+    first_chat_at = next(event["at"] for event in lesson.events if event["type"] == "chat")
+    first_poll_at = next(event["at"] for event in lesson.events if event["type"] == "poll")
+    teacher_before_confusion = [event for event in lesson.events if event["type"] == "teacher" and event["at"] < first_chat_at]
+    assert first_chat_at < first_poll_at
+    assert teacher_before_confusion
+    assert all("?" not in event["text"] for event in teacher_before_confusion)

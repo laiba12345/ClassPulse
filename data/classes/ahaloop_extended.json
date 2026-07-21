@@ -9,11 +9,11 @@
     "basis": "Multiple learners express the denominator-magnitude misconception and miss the baseline poll before a visible-model re-teach."
   },
   "events": [
-    {"at": 0, "type": "teacher", "speaker": "Ms. Morgan", "text": "Today we are comparing fraction size. I want you to explain your reasoning, not only choose an answer."},
-    {"at": 6, "type": "teacher", "speaker": "Ms. Morgan", "text": "Which is greater, one fourth or one eighth, and why?"},
-    {"at": 12, "type": "chat", "speaker": "Sarah", "text": "I think one eighth because eight is the bigger number.", "latency_seconds": 18},
-    {"at": 18, "type": "chat", "speaker": "Priya", "text": "I am confused. Does a bigger denominator make the fraction bigger?", "latency_seconds": 25},
-    {"at": 24, "type": "chat", "speaker": "Leo", "text": "Not sure, but I also chose one eighth.", "latency_seconds": 31},
+    {"at": 0, "type": "teacher", "speaker": "Ms. Morgan", "text": "Today we are comparing fraction size. A denominator tells us how many equal parts make the whole."},
+    {"at": 6, "type": "teacher", "speaker": "Ms. Morgan", "text": "Just remember the rule: a fraction with the smaller denominator is larger. One fourth is larger than one eighth, so we can continue."},
+    {"at": 12, "type": "chat", "speaker": "Sarah", "text": "Wait, I thought one eighth should be larger because eight is the bigger number.", "latency_seconds": 18},
+    {"at": 18, "type": "chat", "speaker": "Priya", "text": "I am confused about why a bigger denominator makes a smaller piece.", "latency_seconds": 25},
+    {"at": 24, "type": "chat", "speaker": "Leo", "text": "I am lost too. The rule does not make sense to me yet.", "latency_seconds": 31},
     {"at": 30, "type": "poll", "question": "Baseline check: 1/4 is greater than 1/8", "responses": {"Sarah": false, "Marcus": true, "Priya": false, "Leo": false}},
     {"at": 40, "type": "teacher", "speaker": "Ms. Morgan", "text": "Let us draw two equal-sized fraction bars. I divide the first bar into four equal pieces and the second into eight equal pieces. Compare one piece from each bar: which piece is larger?"},
     {"at": 48, "type": "chat", "speaker": "Sarah", "text": "Now I see it. Eighths are smaller because the same whole was cut into more pieces.", "latency_seconds": 8},
