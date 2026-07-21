@@ -139,12 +139,6 @@ scalable call infrastructure. Outcome changes are observational and do not prove
 that a suggestion caused learning. Render's free filesystem is ephemeral, so
 long-term records require persistent storage.
 
-## Render deployment
-
-Connect this repository as a Render Blueprint using `render.yaml`, add
-`OPENAI_API_KEY`, and deploy the `nalmai` web service. Render supplies the HTTPS
-origin required for remote camera and microphone access.
-
 ## How I collaborated with Codex
 
 I used Codex throughout the build as an engineering and evaluation partner. I
