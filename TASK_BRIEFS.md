@@ -780,7 +780,28 @@ preserving a measurable baseline and follow-up outcome.
 
 ---
 
-## Stretch tasks (only if Tasks 1-28 are done and fully working with time left)
+## Task 29 — Deploy the two-person demo on a free HTTPS host
+
+**Goal:** Make the teacher/student call reachable from separate physical devices
+without charging for the web host.
+
+**Requirements:**
+- Deploy the FastAPI UI, API, SSE, and WebSocket signaling as one Render service
+- Select the free instance and bind Uvicorn to Render's `$PORT`
+- Keep `OPENAI_API_KEY` in host-managed secrets, never in source control
+- Use the existing origin-relative HTTPS/WSS browser connections
+- Document free-tier cold starts, ephemeral state, OpenAI usage cost, and the
+  STUN-only connectivity limitation
+
+**Definition of done:**
+- A checked-in Blueprint defines build, start, health-check, secret, and free plan
+- Tests protect the deployment command and secure-WebSocket behavior
+- README gives teacher/student deployment and joining instructions
+- Full tests and a local health/route smoke test pass
+
+---
+
+## Stretch tasks (only if Tasks 1-29 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT

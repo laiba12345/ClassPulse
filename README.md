@@ -278,6 +278,34 @@ Restart the demo and imported lessons appear in the lesson selector. See [data/c
 - Automated tests mock the Responses transport; a live GPT‑5.6 call requires the user’s valid API key and account access.
 - TalkMoves is restricted to attribution, noncommercial use, and share-alike redistribution under its source license.
 
+## Free remote demo deployment
+
+The repository includes a [`render.yaml`](./render.yaml) Blueprint that deploys
+the FastAPI app, static UI, SSE stream, and WebSocket signaling together on one
+free Render web service. Render supplies HTTPS, so camera/microphone access and
+secure `wss://` signaling work from separate physical devices.
+
+1. Push this repository to GitHub.
+2. In [Render](https://dashboard.render.com/), choose **New > Blueprint** and
+   connect the repository.
+3. Confirm the `ahaloop` service uses the **Free** instance.
+4. Enter `OPENAI_API_KEY` when Render requests the secret. Never commit `.env`.
+5. After deployment, open `https://<your-service>.onrender.com/call`.
+6. The teacher selects **Create teacher room** and sends the displayed room code
+   plus the `/call` URL to the student. The student enters the code and selects
+   **Join as student**.
+
+Open the URL shortly before presenting: a free instance can sleep after 15
+minutes without HTTP or WebSocket activity and its first request can be slow.
+The app stores rooms and sessions in one process, so a restart clears them.
+
+Hosting can be free, but live GPT-5.6 suggestions, AI polls, and OpenAI speech
+transcription consume the API account's paid usage. Without `OPENAI_API_KEY`,
+the text-analysis demo falls back deterministically and live audio transcription
+is disabled. The current peer connection uses a public STUN server. This works
+on many home networks, but restrictive school/corporate networks or symmetric
+NAT can require a TURN relay; STUN alone cannot guarantee every remote call.
+
 ## How I collaborated with Codex
 
 I used Codex as an implementation and evaluation partner, not as the source of the product idea or the final authority on educational claims. I supplied the AhaLoop goal, the staged task briefs, scope constraints, technology choices, and acceptance criteria. Codex inspected those instructions, implemented each bounded task, ran the application and tests, surfaced failures, and committed completed tasks separately so I could review the progression.
