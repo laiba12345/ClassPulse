@@ -133,11 +133,6 @@ outcomes in `data/nalmai.db`. The Teacher Memory Agent retrieves only the
 current concept's relevant student and teacher history; GPT-5.6 does not receive
 unrestricted database access.
 
-This is a prototype, not a production school system. It has no authentication,
-institutional consent workflow, encrypted student-data service, or horizontally
-scalable call infrastructure. Outcome changes are observational and do not prove
-that a suggestion caused learning. Long-term records require persistent storage.
-
 ## How I collaborated with Codex
 
 I used Codex throughout the build as an engineering and evaluation partner. I
