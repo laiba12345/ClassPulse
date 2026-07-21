@@ -1,5 +1,6 @@
 let liveChunkOffset = 0;
 let presentationActive = false;
+const LIVE_TRANSCRIPTION_WINDOW_SECONDS = 10;
 
 window.advanceDemo = function(step) {
   if (!presentationActive) return;
@@ -125,13 +126,13 @@ function recordNextWindow() {
   recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
   recorder.onstop = async () => {
     const offset = liveChunkOffset;
-    liveChunkOffset += 6;
+    liveChunkOffset += LIVE_TRANSCRIPTION_WINDOW_SECONDS;
     try { await uploadAudio(new Blob(chunks, {type:recorder.mimeType}), offset); }
     catch (error) { toast(error.message); document.querySelector('#captureStatus').textContent = error.message; }
     if (state.capturing) recordNextWindow();
   };
   recorder.start();
-  setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 6000);
+  setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, LIVE_TRANSCRIPTION_WINDOW_SECONDS * 1000);
 }
 
 async function startLiveLecture() {
@@ -158,7 +159,7 @@ async function startLiveLecture() {
   state.capturing = true; liveChunkOffset = 0;
   document.querySelector('#startLecture').disabled = true;
   document.querySelector('#stopLecture').disabled = false;
-  document.querySelector('#captureStatus').textContent = 'Recording first 6-second audio window…';
+  document.querySelector('#captureStatus').textContent = `Recording first ${LIVE_TRANSCRIPTION_WINDOW_SECONDS}-second audio window…`;
   recordNextWindow();
 }
 

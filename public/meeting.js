@@ -1,4 +1,5 @@
 const state = {callLocalStream:null, remoteStream:null, sessionId:null, source:null, capturing:false, analysisTracks:[], windowPromise:null, chunkOffset:0, generatedPoll:null, studentProfile:null};
+const TRANSCRIPTION_WINDOW_SECONDS=10;
 const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
 function toast(text) { const element=document.querySelector('#toast'); element.textContent=text; element.classList.add('show'); setTimeout(()=>element.classList.remove('show'),2400); }
 
@@ -80,12 +81,12 @@ function buildAnalysisTracks(){
 
 function captureTrackWindow(source) {
   const options=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?{mimeType:'audio/webm;codecs=opus'}:{};
-  return new Promise(resolve=>{const recorder=new MediaRecorder(source.stream,options),chunks=[];recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data);};recorder.onstop=()=>resolve({source,blob:new Blob(chunks,{type:recorder.mimeType})});recorder.start();setTimeout(()=>{if(recorder.state==='recording')recorder.stop();},6000);});
+  return new Promise(resolve=>{const recorder=new MediaRecorder(source.stream,options),chunks=[];recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data);};recorder.onstop=()=>resolve({source,blob:new Blob(chunks,{type:recorder.mimeType})});recorder.start();setTimeout(()=>{if(recorder.state==='recording')recorder.stop();},TRANSCRIPTION_WINDOW_SECONDS*1000);});
 }
 
 async function recordMeetingWindow() {
   if(!state.capturing)return;
-  const offset=state.chunkOffset;state.chunkOffset+=6;
+  const offset=state.chunkOffset;state.chunkOffset+=TRANSCRIPTION_WINDOW_SECONDS;
   try{
     const captures=await Promise.all(state.analysisTracks.map(captureTrackWindow));
     await Promise.all(captures.map(async({source,blob})=>{
@@ -93,7 +94,7 @@ async function recordMeetingWindow() {
       const response=await fetch(`/api/sessions/${state.sessionId}/audio-chunks?offset_seconds=${offset}&known_role=${role}&known_speaker_id=${speaker}&filename=${role}.webm`,{method:'POST',headers:{'content-type':blob.type},body:blob});
       if(!response.ok)throw new Error((await response.json()).detail||`${source.role} transcription failed`);
     }));
-    document.querySelector('#analysisStatus').textContent='Streaming separate teacher + student audio · 6 s windows';
+    document.querySelector('#analysisStatus').textContent=`Streaming separate teacher + student audio · ${TRANSCRIPTION_WINDOW_SECONDS} s windows`;
   }catch(error){toast(error.message);}
   if(state.capturing)state.windowPromise=recordMeetingWindow();
 }

@@ -67,7 +67,7 @@ The implementation follows the official [Responses API](https://developers.opena
    clicks **Join as student**. The room rejects a third participant.
 3. Once both videos appear, the teacher clicks **Start analysis**. The browser
    records the teacher's local WebRTC audio track and the student's remote track
-   separately in parallel six-second windows; WebRTC video/audio remains
+   separately in parallel ten-second windows; WebRTC video/audio remains
    peer-to-peer.
 4. Each track is uploaded with its known role and pseudonymous participant ID.
    The server calls `gpt-4o-transcribe-diarize` with `diarized_json`, but ignores
@@ -102,7 +102,7 @@ restrict media capture on non-secure network origins.
 The API key stays in `.env` on the server. The capture path requires
 `OPENAI_API_KEY`; deterministic demo mode still supports scripted replays but
 cannot transcribe audio. Transcription is near-real-time and chunked, so output
-arrives after each **six-second capture window plus upload and API latency**.
+arrives after each **ten-second capture window plus upload and API latency**.
 Separate teacher/student tracks cause two transcription requests per window.
 Speaker labels in the solo/mixed-microphone path remain model estimates. Outcome deltas are observational
 and do not establish that a nudge caused learning.

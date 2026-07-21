@@ -31,7 +31,8 @@ def test_live_call_has_identity_media_and_saved_performance_controls():
     assert "known_role=${role}" in meeting_js
     assert "known_speaker_id=${speaker}" in meeting_js
     assert "state.analysisTracks.map(captureTrackWindow)" in meeting_js
-    assert "6000" in meeting_js
+    assert "TRANSCRIPTION_WINDOW_SECONDS=10" in meeting_js
+    assert "TRANSCRIPTION_WINDOW_SECONDS*1000" in meeting_js
     assert "/api/performance/teacher/" in meeting_js
 
 def test_dashboard_has_all_live_product_surfaces():

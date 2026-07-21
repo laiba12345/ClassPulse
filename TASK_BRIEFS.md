@@ -467,7 +467,7 @@ authorized user.
 
 ## Task 15 — Live browser speech-to-text
 
-Capture camera and microphone in the dashboard, record standalone six-second
+Capture camera and microphone in the dashboard, record standalone ten-second
 audio windows, and send each window through the OpenAI Audio transcription API.
 A live session stays open until the teacher stops capture. The API key remains
 server-side and live turns use the same CCS/BKT/nudge runtime as replays.
@@ -874,12 +874,12 @@ path when diarization labels change between live audio windows.
 
 **Requirements:**
 - Record the teacher local WebRTC track and student remote track separately
-- Keep parallel six-second capture windows and upload both independently
+- Keep parallel ten-second capture windows and upload both independently
 - Include the known role and stable pseudonymous participant ID with each upload
 - Override model diarization labels only when a trusted per-participant WebRTC
   track is available; retain diarization for mixed/solo microphone input
 - Document that this doubles transcription requests and that displayed latency
-  is six seconds plus upload and API processing
+  is ten seconds plus upload and API processing
 
 **Definition of done:**
 - Every teacher-track segment routes to explanation risk and verification

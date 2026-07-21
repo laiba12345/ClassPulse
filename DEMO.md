@@ -71,7 +71,7 @@ Use this for a live judge conversation, not the deterministic submitted video:
 3. Enter that code in the second window and click **Join as student**.
 4. Wait until both windows show the remote participant and `2/2 participants`.
 5. Use headphones to prevent speaker echo.
-6. In the teacher window only, click **Start analysis**. The teacher and student WebRTC audio tracks are captured separately in six-second windows and transcribed with their known participant roles, avoiding cross-speaker attribution. Keep the teacher insight column visible: it shows CCS, mastery, explanation risk, transcript, and GPT-5.6 suggestions during the meeting.
+6. In the teacher window only, click **Start analysis**. The teacher and student WebRTC audio tracks are captured separately in ten-second windows and transcribed with their known participant roles, avoiding cross-speaker attribution. Keep the teacher insight column visible: it shows CCS, mastery, explanation risk, transcript, and GPT-5.6 suggestions during the meeting.
 7. Let the teacher explain normally. The student should interrupt naturally with “Wait, I am confused about why a larger denominator makes a smaller piece.”
 8. When the nudge fires, GPT-5.6 automatically creates a baseline check in the student window. Let the student answer, teach the suggested strategy, and let the student answer the automatically generated transfer check.
 9. Use **Leave** in both windows when finished.
