@@ -136,15 +136,14 @@ unrestricted database access.
 This is a prototype, not a production school system. It has no authentication,
 institutional consent workflow, encrypted student-data service, or horizontally
 scalable call infrastructure. Outcome changes are observational and do not prove
-that a suggestion caused learning. Render's free filesystem is ephemeral, so
-long-term records require persistent storage.
+that a suggestion caused learning. Long-term records require persistent storage.
 
 ## How I collaborated with Codex
 
 I used Codex throughout the build as an engineering and evaluation partner. I
 defined Nalmai's purpose, selected the name, changed the product requirements as
 the live experience developed, reviewed the results, and made the final scope,
-privacy, evidence, and deployment decisions.
+privacy, and evidence decisions.
 
 Representative prompts and task briefs included:
 
@@ -158,8 +157,8 @@ Representative prompts and task briefs included:
 > CCS for nudges, not individual mastery.”
 
 Codex implemented the FastAPI runtime, dashboard, WebRTC call, OpenAI adapters,
-CCS and BKT engines, SQLite persistence, Teacher Memory Agent, deployment setup,
-and automated tests. It also helped diagnose speaker-attribution errors,
+CCS and BKT engines, SQLite persistence, Teacher Memory Agent, and automated
+tests. It also helped diagnose speaker-attribution errors,
 transcription parsing, inaccessible scrolling, diluted one-student CCS, and the
 missing connection between explanation risk and teaching suggestions.
 
