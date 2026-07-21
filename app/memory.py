@@ -39,6 +39,16 @@ class MasteryMemory:
                 )
                 """)
                 connection.execute("CREATE TABLE IF NOT EXISTS model_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+                connection.execute("""CREATE TABLE IF NOT EXISTS participant_profiles (
+                    subject_id TEXT NOT NULL, role TEXT NOT NULL, display_name TEXT NOT NULL,
+                    updated_at TEXT NOT NULL, PRIMARY KEY (subject_id, role)
+                )""")
+                connection.execute("""CREATE TABLE IF NOT EXISTS teaching_outcomes (
+                    teacher_id TEXT NOT NULL, session_id TEXT NOT NULL, nudge_id TEXT NOT NULL,
+                    concept TEXT NOT NULL, strategy TEXT NOT NULL, implementation_status TEXT NOT NULL,
+                    correctness_delta REAL, recorded_at TEXT NOT NULL,
+                    PRIMARY KEY (teacher_id, session_id, nudge_id)
+                )""")
                 boundary = connection.execute("SELECT value FROM model_metadata WHERE key='individual_evidence_boundary'").fetchone()
                 if existed and boundary is None:
                     # Legacy states mixed class-wide CCS into every learner and
@@ -63,6 +73,54 @@ class MasteryMemory:
                     correct=excluded.correct, soft_updates=excluded.soft_updates,
                     updated_at=excluded.updated_at
                 """, (student_id, concept, state.mastery, state.observations, state.correct, state.soft_updates, updated_at))
+
+    def save_profile(self, subject_id: str, role: str, display_name: str) -> None:
+        if role not in {"teacher", "student"}:
+            raise ValueError("role must be teacher or student")
+        with self._lock, closing(self._connect()) as connection:
+            with connection:
+                connection.execute("""INSERT INTO participant_profiles VALUES (?, ?, ?, ?)
+                    ON CONFLICT(subject_id, role) DO UPDATE SET display_name=excluded.display_name,
+                    updated_at=excluded.updated_at""",
+                    (subject_id, role, display_name, datetime.now(timezone.utc).isoformat()))
+
+    def save_teaching_outcomes(self, teacher_id: str, session_id: str, outcomes: list[dict]) -> None:
+        with self._lock, closing(self._connect()) as connection:
+            with connection:
+                for outcome in outcomes:
+                    connection.execute("""INSERT OR REPLACE INTO teaching_outcomes VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (
+                        teacher_id, session_id, outcome["nudge_id"], outcome["concept"], outcome["strategy"],
+                        outcome["implementation_status"], outcome["correctness_delta"], datetime.now(timezone.utc).isoformat(),
+                    ))
+
+    def performance_summary(self, subject_id: str, role: str) -> dict:
+        with closing(self._connect()) as connection:
+            profile = connection.execute(
+                "SELECT display_name FROM participant_profiles WHERE subject_id=? AND role=?", (subject_id, role),
+            ).fetchone()
+            if role == "student":
+                rows = connection.execute(
+                    "SELECT concept, mastery, observations, correct, soft_updates, updated_at FROM mastery_states WHERE student_id=? ORDER BY concept",
+                    (subject_id,),
+                ).fetchall()
+                return {"subject_id": subject_id, "role": role, "display_name": profile[0] if profile else subject_id,
+                        "concepts": [dict(row) for row in rows]}
+            rows = connection.execute(
+                "SELECT session_id, strategy, implementation_status, correctness_delta FROM teaching_outcomes WHERE teacher_id=?", (subject_id,),
+            ).fetchall()
+        strategies = {}
+        for row in rows:
+            item = strategies.setdefault(row["strategy"], {"attempts": 0, "implemented": 0, "observed_deltas": []})
+            item["attempts"] += 1
+            item["implemented"] += row["implementation_status"] == "implemented"
+            if row["correctness_delta"] is not None:
+                item["observed_deltas"].append(row["correctness_delta"])
+        for item in strategies.values():
+            values = item.pop("observed_deltas")
+            item["mean_observed_delta"] = round(sum(values) / len(values), 3) if values else None
+        return {"subject_id": subject_id, "role": role, "display_name": profile[0] if profile else subject_id,
+                "sessions_with_nudges": len({row["session_id"] for row in rows}),
+                "strategies": strategies, "limitations": "Observed implementation and next-check changes are not causal proof of teaching improvement."}
 
 
 def build_memory() -> MasteryMemory | None:

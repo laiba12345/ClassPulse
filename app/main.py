@@ -43,6 +43,10 @@ class LiveStudentInput(BaseModel):
 class SessionCreate(BaseModel):
     fixture_id: str
     mode: str = "replay"
+    teacher_id: str | None = Field(default=None, min_length=1, max_length=80)
+    teacher_name: str | None = Field(default=None, min_length=1, max_length=80)
+    student_id: str | None = Field(default=None, min_length=1, max_length=80)
+    student_name: str | None = Field(default=None, min_length=1, max_length=80)
 
 
 @app.websocket("/ws/calls/{room_id}/{participant_id}")
@@ -116,7 +120,9 @@ def real_data_evidence():
 @app.post("/api/sessions", status_code=status.HTTP_201_CREATED)
 def create_session(payload: SessionCreate):
     try:
-        return session_registry.create(payload.fixture_id, mode=payload.mode).summary()
+        return session_registry.create(payload.fixture_id, mode=payload.mode,
+            teacher_id=payload.teacher_id, teacher_name=payload.teacher_name,
+            student_id=payload.student_id, student_name=payload.student_name).summary()
     except FileNotFoundError as error:
         raise HTTPException(404, str(error)) from error
     except ValueError as error:
@@ -160,6 +166,7 @@ def session_live_input(session_id: str, payload: LiveStudentInput):
 async def session_audio_chunk(
     session_id: str, request: Request, offset_seconds: float = Query(0, ge=0),
     teacher_speaker: str = Query("speaker_0", min_length=1), filename: str = Query("classroom.webm"),
+    student_id: str | None = Query(default=None, min_length=1, max_length=80),
 ):
     record = _session_record(session_id)
     audio = await request.body()
@@ -176,7 +183,7 @@ async def session_audio_chunk(
     except Exception as error:
         raise HTTPException(502, f"Transcription failed: {error}") from error
     events = [
-        record.runtime.submit_transcript_segment(segment, offset_seconds=offset_seconds, teacher_speaker=teacher_speaker)
+        record.runtime.submit_transcript_segment(segment, offset_seconds=offset_seconds, teacher_speaker=teacher_speaker, student_id=student_id)
         for segment in segments
     ]
     return {"accepted": True, "model": transcriber.model, "segments": [segment.as_dict() for segment in segments], "events": events}
@@ -212,9 +219,22 @@ def session_live_poll(session_id: str, payload: LivePollInput):
 
 @app.post("/api/sessions/{session_id}/stop")
 def stop_session(session_id: str):
-    runtime = _session_record(session_id).runtime
+    record = _session_record(session_id)
+    runtime = record.runtime
+    if record.teacher_id and runtime.bkt.memory:
+        runtime.bkt.memory.save_teaching_outcomes(record.teacher_id, session_id, runtime.outcomes.snapshot())
     runtime.stop()
     return {"stopping": True, "session_id": session_id}
+
+
+@app.get("/api/performance/{role}/{subject_id}")
+def performance(role: str, subject_id: str):
+    if role not in {"teacher", "student"}:
+        raise HTTPException(422, "role must be teacher or student")
+    memory = build_memory()
+    if memory is None:
+        raise HTTPException(503, "Performance persistence is disabled")
+    return memory.performance_summary(subject_id, role)
 
 
 @app.get("/api/stream/{lesson_id}")

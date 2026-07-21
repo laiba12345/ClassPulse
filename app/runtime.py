@@ -74,12 +74,13 @@ class ClassRuntime:
         self.event_queue.put_nowait(event)
         return event
 
-    def submit_transcript_segment(self, segment: DiarizedSegment, *, offset_seconds: float, teacher_speaker: str) -> dict:
+    def submit_transcript_segment(self, segment: DiarizedSegment, *, offset_seconds: float, teacher_speaker: str,
+                                  student_id: str | None = None) -> dict:
         is_teacher = segment.speaker == teacher_speaker
         event = {
             "id": f"audio-{len(self.processed_sources) + self.event_queue.qsize() + 1}",
             "at": round(offset_seconds + segment.start, 3), "end_at": round(offset_seconds + segment.end, 3),
-            "type": "teacher" if is_teacher else "chat", "speaker": "Teacher" if is_teacher else segment.speaker,
+            "type": "teacher" if is_teacher else "chat", "speaker": "Teacher" if is_teacher else (student_id or segment.speaker),
             "text": segment.text, "latency_seconds": 0, "source": "live_audio", "live": True,
             "session_id": self.session_id, "lesson_id": self.lesson.id, "concept": self.lesson.concept,
         }

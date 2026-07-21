@@ -1,4 +1,4 @@
-const callState = {socket:null, peer:null, localStream:null, remoteStream:null, role:null, room:null, participant:null, pendingIce:[]};
+const callState = {socket:null, peer:null, localStream:null, remoteStream:null, role:null, room:null, participant:null, profile:null, remoteProfile:null, pendingIce:[]};
 
 function callStatus(message, connected=false) {
   const element = document.querySelector('#callStatus');
@@ -49,6 +49,7 @@ async function makePeer() {
 async function handleSignal(message) {
   if (message.type === 'joined') {
     callStatus(`${callState.role === 'teacher' ? 'Room created' : 'Joined'} · ${callState.room} · waiting for ${message.peers.length ? 'connection' : 'second participant'}`, true);
+    signal({type:'app_event',payload:{kind:'participant_profile',...callState.profile}});
     if (callState.role === 'student') signal({type:'ready'});
     return;
   }
@@ -73,6 +74,11 @@ async function handleSignal(message) {
     callState.remoteStream = null; state.remoteStream = null;
     callStatus(`Other participant left · room ${callState.room}`);
   } else if (message.type === 'app_event') {
+    if(message.payload?.kind==='participant_profile'){
+      callState.remoteProfile=message.payload;
+      document.querySelector('#remoteVideo').closest('figure').querySelector('figcaption').textContent=message.payload.display_name;
+      if(callState.role==='teacher') signal({type:'app_event',payload:{kind:'participant_profile',...callState.profile}});
+    }
     window.dispatchEvent(new CustomEvent('call_app_event', {detail: message.payload}));
   } else if (message.type === 'error') {
     throw new Error(message.message);
@@ -82,11 +88,15 @@ async function handleSignal(message) {
 async function joinDemoCall(role) {
   if (!navigator.mediaDevices || !window.RTCPeerConnection) throw new Error('This browser does not support WebRTC calls');
   if (callState.socket) leaveDemoCall();
+  const displayName=document.querySelector('#participantName').value.trim(), stableId=document.querySelector('#participantId').value.trim();
+  if(!displayName||!stableId)throw new Error('Enter a display name and stable pseudonymous ID');
+  if(!/^[A-Za-z0-9_-]{2,80}$/.test(stableId))throw new Error('ID must use 2–80 letters, numbers, hyphens, or underscores');
   const input = document.querySelector('#callRoom');
   const room = (role === 'teacher' ? (input.value.trim() || callCode()) : input.value.trim()).toUpperCase().replace(/[^A-Z0-9-]/g,'');
   if (!room) throw new Error('Enter the teacher room code');
   input.value = room;
   callState.role = role; callState.room = room;
+  callState.profile={role,display_name:displayName,subject_id:stableId};
   document.body.dataset.role = role;
   document.querySelector('#teacherInsights').hidden = role !== 'teacher';
   document.querySelector('.meeting-shell').style.gridTemplateColumns = role === 'teacher' ? '' : '1fr';
@@ -101,19 +111,30 @@ async function joinDemoCall(role) {
   document.querySelector('#createCall').disabled = true;
   document.querySelector('#joinCall').disabled = true;
   document.querySelector('#leaveCall').disabled = false;
+  document.querySelector('#toggleMic').disabled=false;document.querySelector('#toggleCamera').disabled=false;
+  document.querySelector('#localVideo').closest('figure').querySelector('figcaption').textContent=displayName;
+}
+
+function toggleTrack(kind){
+  const track=kind==='audio'?callState.localStream?.getAudioTracks()[0]:callState.localStream?.getVideoTracks()[0];
+  if(!track)return;track.enabled=!track.enabled;
+  const button=document.querySelector(kind==='audio'?'#toggleMic':'#toggleCamera');
+  button.textContent=kind==='audio'?(track.enabled?'Mute mic':'Unmute mic'):(track.enabled?'Turn camera off':'Turn camera on');
 }
 
 function leaveDemoCall() {
   if (state.capturing && typeof stopMeetingAnalysis === 'function') stopMeetingAnalysis().catch(error => toast(error.message));
   callState.socket?.close(); callState.peer?.close();
   callState.localStream?.getTracks().forEach(track => track.stop());
-  Object.assign(callState, {socket:null, peer:null, localStream:null, remoteStream:null, role:null, room:null, participant:null, pendingIce:[]});
+  Object.assign(callState, {socket:null, peer:null, localStream:null, remoteStream:null, role:null, room:null, participant:null, profile:null, remoteProfile:null, pendingIce:[]});
   state.callLocalStream = null; state.remoteStream = null;
   document.querySelector('#localVideo').srcObject = null;
   document.querySelector('#remoteVideo').srcObject = null;
   document.querySelector('#createCall').disabled = false;
   document.querySelector('#joinCall').disabled = false;
   document.querySelector('#leaveCall').disabled = true;
+  document.querySelector('#toggleMic').disabled=true;document.querySelector('#toggleCamera').disabled=true;
+  document.querySelector('#toggleMic').textContent='Mute mic';document.querySelector('#toggleCamera').textContent='Turn camera off';
   document.querySelector('#teacherInsights').hidden = true;
   document.querySelector('.meeting-shell').style.gridTemplateColumns = '';
   document.body.removeAttribute('data-role');
@@ -123,3 +144,5 @@ function leaveDemoCall() {
 document.querySelector('#createCall').onclick = () => joinDemoCall('teacher').catch(error => { callStatus(error.message); toast(error.message); });
 document.querySelector('#joinCall').onclick = () => joinDemoCall('student').catch(error => { callStatus(error.message); toast(error.message); });
 document.querySelector('#leaveCall').onclick = leaveDemoCall;
+document.querySelector('#toggleMic').onclick=()=>toggleTrack('audio');
+document.querySelector('#toggleCamera').onclick=()=>toggleTrack('video');

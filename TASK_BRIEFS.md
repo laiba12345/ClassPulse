@@ -843,7 +843,31 @@ container suitable for a single-task ECS service.
 
 ---
 
-## Stretch tasks (only if Tasks 1-31 are done and fully working with time left)
+## Task 33 — Add media privacy controls and longitudinal performance records
+
+**Goal:** Let participants control their media and retain useful learning and
+teaching evidence under stable pseudonymous identities.
+
+**Requirements:**
+- Add independent microphone mute/unmute and camera on/off controls
+- Require a display name and stable pseudonymous ID for teacher and student
+- Map student transcript and poll evidence to the stable student ID
+- Persist participant profiles, per-concept learner mastery, and teacher
+  intervention implementation/outcome records in SQLite
+- Show saved learner and teacher summaries only in the teacher call panel
+- State that observed outcome deltas are not causal teaching-quality measures
+- Document authentication, consent, retention, and privacy limitations
+
+**Definition of done:**
+- Media tracks can be disabled and restored without leaving the call
+- Repeated sessions using the same student ID reuse mastery history
+- Teacher summaries aggregate strategy attempts, implementation, and observed
+  next-check deltas across saved sessions
+- Persistence, API, UI, JavaScript, and full-suite tests pass
+
+---
+
+## Stretch tasks (only if Tasks 1-33 are done and fully working with time left)
 
 - §4.2b Independent Outcome Verification: one follow-up check question,
   graded separately from CCS, feeding a real evidence point into BKT

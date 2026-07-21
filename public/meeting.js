@@ -1,4 +1,4 @@
-const state = {callLocalStream:null, remoteStream:null, sessionId:null, source:null, capturing:false, mediaStream:null, audioContext:null, chunkOffset:0, generatedPoll:null};
+const state = {callLocalStream:null, remoteStream:null, sessionId:null, source:null, capturing:false, mediaStream:null, audioContext:null, chunkOffset:0, generatedPoll:null, studentProfile:null};
 const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
 function toast(text) { const element=document.querySelector('#toast'); element.textContent=text; element.classList.add('show'); setTimeout(()=>element.classList.remove('show'),2400); }
 
@@ -49,7 +49,8 @@ function showStudentPoll(data) {
 async function gradeStudentPoll(data) {
   const poll=state.generatedPoll;if(!poll||poll.poll_id!==data.poll_id)return;
   const correct=data.selected_index===poll.correct_index;
-  const response=await fetch(`/api/sessions/${state.sessionId}/polls`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:poll.question,responses:{Student:correct}})});
+  const studentId=state.studentProfile?.subject_id||'student';
+  const response=await fetch(`/api/sessions/${state.sessionId}/polls`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:poll.question,responses:{[studentId]:correct}})});
   if(!response.ok)throw new Error('Could not record student poll response');
   const card=document.querySelector('#aiPollCard');
   card.insertAdjacentHTML('beforeend',`<p><b>${correct?'Correct':'Incorrect'}</b> · ${escapeHtml(poll.explanation)}</p>`);
@@ -85,7 +86,8 @@ function recordMeetingWindow() {
     const offset=state.chunkOffset; state.chunkOffset+=6;
     try {
       const blob=new Blob(chunks,{type:recorder.mimeType}), teacher=encodeURIComponent(document.querySelector('#teacherSpeaker').value||'speaker_0');
-      const response=await fetch(`/api/sessions/${state.sessionId}/audio-chunks?offset_seconds=${offset}&teacher_speaker=${teacher}&filename=call.webm`,{method:'POST',headers:{'content-type':blob.type},body:blob});
+      const student=encodeURIComponent(state.studentProfile?.subject_id||'student');
+      const response=await fetch(`/api/sessions/${state.sessionId}/audio-chunks?offset_seconds=${offset}&teacher_speaker=${teacher}&student_id=${student}&filename=call.webm`,{method:'POST',headers:{'content-type':blob.type},body:blob});
       if(!response.ok) throw new Error((await response.json()).detail||'Transcription failed');
       document.querySelector('#analysisStatus').textContent='Streaming call audio';
     } catch(error) { toast(error.message); }
@@ -96,7 +98,8 @@ function recordMeetingWindow() {
 
 async function startMeetingAnalysis() {
   if(!state.callLocalStream||!state.remoteStream) throw new Error('Connect both participants first');
-  const response=await fetch('/api/sessions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({fixture_id:document.querySelector('#meetingConcept').value,mode:'live'})});
+  if(!callState.profile||callState.role!=='teacher'||!state.studentProfile)throw new Error('Teacher and student identities must be connected');
+  const response=await fetch('/api/sessions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({fixture_id:document.querySelector('#meetingConcept').value,mode:'live',teacher_id:callState.profile.subject_id,teacher_name:callState.profile.display_name,student_id:state.studentProfile.subject_id,student_name:state.studentProfile.display_name})});
   if(!response.ok) throw new Error('Could not start analysis');
   const session=await response.json(); connectAnalysis(session.session_id);
   state.mediaStream=buildAnalysisStream(); state.capturing=true; state.chunkOffset=0;
@@ -107,9 +110,23 @@ async function stopMeetingAnalysis() {
   state.capturing=false;state.mediaStream?.getTracks().forEach(track=>track.stop());await state.audioContext?.close();
   if(state.sessionId) await fetch(`/api/sessions/${state.sessionId}/stop`,{method:'POST'});
   document.querySelector('#analysisStart').disabled=false;document.querySelector('#analysisStop').disabled=true;document.querySelector('#analysisStatus').textContent='Analysis stopped';
+  await loadPerformance();
+}
+
+async function loadPerformance(){
+  if(!callState.profile||callState.role!=='teacher')return;
+  const [teacher,student]=await Promise.all([
+    fetch(`/api/performance/teacher/${encodeURIComponent(callState.profile.subject_id)}`).then(r=>r.ok?r.json():null),
+    state.studentProfile?fetch(`/api/performance/student/${encodeURIComponent(state.studentProfile.subject_id)}`).then(r=>r.ok?r.json():null):null,
+  ]);
+  const card=document.querySelector('#performanceCard');
+  const concepts=student?.concepts||[], strategies=teacher?.strategies||{};
+  const latest=concepts.length?concepts.map(x=>`${escapeHtml(x.concept)} ${Math.round(x.mastery*100)}%`).join(' · '):'No learner evidence yet';
+  const teaching=Object.entries(strategies).length?Object.entries(strategies).map(([name,x])=>`${escapeHtml(name.replaceAll('_',' '))}: ${x.implemented}/${x.attempts} implemented${x.mean_observed_delta===null?'':`, ${x.mean_observed_delta>=0?'+':''}${Math.round(x.mean_observed_delta*100)} pts`}`).join('<br>'):'No completed teaching outcomes yet';
+  card.innerHTML=`<small>SAVED PERFORMANCE · PSEUDONYMOUS</small><strong>${escapeHtml(student?.display_name||state.studentProfile?.display_name||'Student')}: ${latest}</strong><p>${teaching}</p><p>Observed changes are not causal proof of teaching improvement.</p>`;
 }
 
 document.querySelector('#analysisStart').onclick=()=>startMeetingAnalysis().catch(error=>toast(error.message));
 document.querySelector('#analysisStop').onclick=()=>stopMeetingAnalysis().catch(error=>toast(error.message));
-window.addEventListener('call_app_event',event=>{const data=event.detail;if(data.kind==='generated_poll'&&document.body.dataset.role==='student')showStudentPoll(data);if(data.kind==='poll_response'&&document.body.dataset.role==='teacher')gradeStudentPoll(data).catch(error=>toast(error.message));});
+window.addEventListener('call_app_event',event=>{const data=event.detail;if(data.kind==='participant_profile'&&data.role==='student'){state.studentProfile=data;if(callState.role==='teacher')loadPerformance().catch(()=>{});}if(data.kind==='generated_poll'&&document.body.dataset.role==='student')showStudentPoll(data);if(data.kind==='poll_response'&&document.body.dataset.role==='teacher')gradeStudentPoll(data).catch(error=>toast(error.message));});
 initializeMeeting().catch(error=>toast(error.message));

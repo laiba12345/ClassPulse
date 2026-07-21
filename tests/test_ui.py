@@ -18,6 +18,19 @@ def test_every_public_page_displays_only_the_nalmai_brand():
     assert "individual language evidence" in dashboard
     assert "CCS soft evidence" not in dashboard
 
+
+def test_live_call_has_identity_media_and_saved_performance_controls():
+    root = Path(__file__).parents[1]
+    html = (root / "public/call.html").read_text(encoding="utf-8")
+    call_js = (root / "public/call.js").read_text(encoding="utf-8")
+    meeting_js = (root / "public/meeting.js").read_text(encoding="utf-8")
+    for control in ("participantName", "participantId", "toggleMic", "toggleCamera", "performanceCard"):
+        assert f'id="{control}"' in html
+    assert "track.enabled=!track.enabled" in call_js
+    assert "participant_profile" in call_js
+    assert "student_id=${student}" in meeting_js
+    assert "/api/performance/teacher/" in meeting_js
+
 def test_dashboard_has_all_live_product_surfaces():
     root = Path(__file__).parents[1]
     html = (root / "public/index.html").read_text(encoding="utf-8")

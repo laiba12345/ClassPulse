@@ -82,6 +82,15 @@ risk, transcript, teaching suggestions, implementation verification, and
 AI-generated learning checks visible beside the videos. The student receives
 the generated options in the call and never has to wait for the teacher to write a poll.
 
+Each participant can independently mute their microphone or disable their
+camera without leaving. Before joining, both enter a display name and stable
+**pseudonymous ID**. Student transcript evidence and poll correctness use that
+ID, so per-concept mastery persists across sessions. The teacher ID links
+implemented intervention strategies with observed next-check changes and shows
+strategy attempts, implementation counts, and mean observed deltas in the
+teacher-only call panel. These values describe recorded evidence, not a causal
+or comprehensive measure of teaching quality.
+
 For the most reliable local demonstration, open `/call` in two browser windows on the same
 computer. Camera/microphone access from a second
 physical device normally requires serving Nalmai over HTTPS because browsers
@@ -275,6 +284,10 @@ Restart the demo and imported lessons appear in the lesson selector. See [data/c
   hard capacity of two. They are not a replacement for Zoom/Teams, and a public
   deployment requires HTTPS, authenticated room access, TURN infrastructure,
   consent, and an institutional privacy policy.
+- Performance endpoints are unauthenticated in this demo. Use only pseudonymous
+  identifiers and synthetic/consented data; add access control, encryption,
+  retention/deletion workflows, and an institutional data agreement before any
+  real student deployment.
 - Automated tests mock the Responses transport; a live GPT‑5.6 call requires the user’s valid API key and account access.
 - TalkMoves is restricted to attribution, noncommercial use, and share-alike redistribution under its source license.
 
@@ -403,7 +416,7 @@ I retained responsibility for the product and evidence decisions:
 
 ### Tests and evaluation Codex helped construct
 
-Codex helped build the current 104-test suite, including:
+Codex helped build the current 106-test suite, including:
 
 - Fixture schema, event ordering, original timestamps, and asynchronous replay.
 - Calm, confused, bounded, early-warning, breadth, and time-decay CCS behavior.

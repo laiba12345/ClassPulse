@@ -1,0 +1,5 @@
+.identity-controls{display:grid;grid-template-columns:1fr 1fr 2fr;gap:8px;align-items:end;margin-bottom:10px;padding:9px;background:var(--paper);border-radius:9px}
+.identity-controls label{font-size:8px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.identity-controls input{border:1px solid var(--line);border-radius:7px;padding:7px}
+.identity-controls small{font-size:8px;color:var(--muted);line-height:1.4}
+@media(max-width:750px){.identity-controls{grid-template-columns:1fr 1fr}.identity-controls small{grid-column:1/-1}.call-controls{flex-wrap:wrap}}

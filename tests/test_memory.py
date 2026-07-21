@@ -18,6 +18,30 @@ def test_default_database_uses_the_nalmai_name():
     assert DEFAULT_DB.name == "nalmai.db"
 
 
+def test_pseudonymous_learner_and_teacher_performance_persist():
+    path = _db_path()
+    try:
+        memory = MasteryMemory(path)
+        memory.save_profile("student-001", "student", "Student One")
+        memory.save_profile("teacher-001", "teacher", "Teacher One")
+        tracker = BKTTracker(memory=memory)
+        tracker.update_mastery("student-001", "fractions", correct=True)
+        memory.save_teaching_outcomes("teacher-001", "session-1", [{
+            "nudge_id": "nudge-1", "concept": "fractions", "strategy": "visual_model",
+            "implementation_status": "implemented", "correctness_delta": .25,
+        }])
+
+        learner = memory.performance_summary("student-001", "student")
+        teacher = memory.performance_summary("teacher-001", "teacher")
+        assert learner["display_name"] == "Student One"
+        assert learner["concepts"][0]["mastery"] > .35
+        assert teacher["sessions_with_nudges"] == 1
+        assert teacher["strategies"]["visual_model"] == {"attempts": 1, "implemented": 1, "mean_observed_delta": .25}
+        assert "not causal" in teacher["limitations"]
+    finally:
+        path.unlink(missing_ok=True)
+
+
 def test_mastery_persists_across_tracker_restart():
     path = _db_path()
     try:

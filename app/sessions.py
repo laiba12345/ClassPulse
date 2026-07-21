@@ -16,6 +16,10 @@ class SessionRecord:
     runtime: ClassRuntime
     created_at: str
     mode: str = "replay"
+    teacher_id: str | None = None
+    teacher_name: str | None = None
+    student_id: str | None = None
+    student_name: str | None = None
 
     def summary(self) -> dict:
         return {
@@ -25,6 +29,8 @@ class SessionRecord:
             "students": len(self.runtime.lesson.students), "created_at": self.created_at,
             "stream_url": f"/stream/{self.session_id}",
             "mode": self.mode,
+            "teacher_id": self.teacher_id, "teacher_name": self.teacher_name,
+            "student_id": self.student_id, "student_name": self.student_name,
         }
 
 
@@ -33,7 +39,9 @@ class SessionRegistry:
         self.provider_factory, self.memory_factory = provider_factory, memory_factory
         self.sessions: dict[str, SessionRecord] = {}
 
-    def create(self, fixture_id: str, session_id: str | None = None, mode: str = "replay") -> SessionRecord:
+    def create(self, fixture_id: str, session_id: str | None = None, mode: str = "replay", *,
+               teacher_id: str | None = None, teacher_name: str | None = None,
+               student_id: str | None = None, student_name: str | None = None) -> SessionRecord:
         fixture_id = fixture_id.replace("_", "-")
         lesson = ScriptedClass.load_available(fixture_id.replace("-", "_"))
         session_id = session_id or uuid4().hex[:12]
@@ -41,8 +49,15 @@ class SessionRegistry:
             raise ValueError(f"Session already exists: {session_id}")
         if mode not in {"replay", "live"}:
             raise ValueError("mode must be replay or live")
-        runtime = ClassRuntime(lesson, self.provider_factory(), memory=self.memory_factory(), session_id=session_id, live_mode=mode == "live")
-        record = SessionRecord(session_id, fixture_id, runtime, datetime.now(timezone.utc).isoformat(), mode)
+        memory = self.memory_factory()
+        runtime = ClassRuntime(lesson, self.provider_factory(), memory=memory, session_id=session_id, live_mode=mode == "live")
+        record = SessionRecord(session_id, fixture_id, runtime, datetime.now(timezone.utc).isoformat(), mode,
+                               teacher_id, teacher_name, student_id, student_name)
+        if memory:
+            if teacher_id and teacher_name:
+                memory.save_profile(teacher_id, "teacher", teacher_name)
+            if student_id and student_name:
+                memory.save_profile(student_id, "student", student_name)
         self.sessions[session_id] = record
         return record
 
