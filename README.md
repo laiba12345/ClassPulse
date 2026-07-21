@@ -139,24 +139,11 @@ scalable call infrastructure. Outcome changes are observational and do not prove
 that a suggestion caused learning. Render's free filesystem is ephemeral, so
 long-term records require persistent storage.
 
-## Deployment
-
-### Render
+## Render deployment
 
 Connect this repository as a Render Blueprint using `render.yaml`, add
 `OPENAI_API_KEY`, and deploy the `nalmai` web service. Render supplies the HTTPS
 origin required for remote camera and microphone access.
-
-### Docker
-
-```sh
-docker build -t nalmai .
-docker run --rm -p 8000:8000 -e OPENAI_API_KEY="your-key" nalmai
-```
-
-For ECS, run one task behind an HTTPS Application Load Balancer and mount
-persistent storage at `/app/data`. See the comments and settings in
-[`Dockerfile`](./Dockerfile) and use `/api/health` for health checks.
 
 ## How I collaborated with Codex
 
@@ -177,7 +164,7 @@ Representative prompts and task briefs included:
 > CCS for nudges, not individual mastery.”
 
 Codex implemented the FastAPI runtime, dashboard, WebRTC call, OpenAI adapters,
-CCS and BKT engines, SQLite persistence, Teacher Memory Agent, Docker packaging,
+CCS and BKT engines, SQLite persistence, Teacher Memory Agent, deployment setup,
 and automated tests. It also helped diagnose speaker-attribution errors,
 transcription parsing, inaccessible scrolling, diluted one-student CCS, and the
 missing connection between explanation risk and teaching suggestions.
